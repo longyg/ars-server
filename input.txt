@@ -1,0 +1,38 @@
+NEType:
+CSCF
+NEVersion:
+18.0C (bare metal)
+NEPresentation:
+Call Session Control Function
+AdaptationId:
+com.nsn.cscf
+FM_DB_Prefix:
+ADCSCF
+PM_DB_Prefix:
+IMSCSF
+SCName:
+UMAIMS
+SSName:
+IMSCSF
+PM_PBs:
+csfcap, csfcdb, csfrap, csfrdb
+AdaptationRelease:
+18.0C
+AgentClass:
+CSCF
+AlarmingObjects:
+CSCF,COMMON,TSP,PLATFORM,FEE
+MAN_additional_requirements:
+
+OMeSVersion:
+OMeS2.3
+CmAdaptationRelease:
+18.0CI
+CNUM_RootContext:
+CSCF
+IntegrationDocumentName:
+Integrating CFX-5000 (Call Session Control Function) to NetAct
+ITSM_applications:
+TraceViewer,SWM,SWAM,License,SLNBI
+FP_NetAct_Release:
+NA17.2SP1708

@@ -1,0 +1,24 @@
+NE Types (Done)
+NE Releases (Done)
+
+Interfaces (Done)
+Adaptations (Done)
+Alarm objects (Done)
+Object Loads (Done)
+Parent Objects (Done)
+User Story Variables
+
+Release Configuration: (Done)
+ - Interfaces
+ - Adaptations
+ - Alarm objects
+ - Object Loads
+ - NE size (max/avg NEs per Network)
+ - Parent hierarchy
+ - User Story Variables
+
+Generate ARS:
+1. NE Type
+2. NE release
+3. Last NE release
+4. Older NE releases

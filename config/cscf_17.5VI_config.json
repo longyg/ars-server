@@ -1,0 +1,25 @@
+{
+  "type": "svn",
+  "root": "",
+  "svn_username": "",
+  "svn_password": "",
+  "resources": [
+    "com.nsn.cscf-15.5VI/o2ml/extra/package/IMSCL1550793.000/Ines_o2ml_com.nsn.cscf-15.5VI.zip",
+    "com.nsn.cscf-16.0VI/o2ml/extra/package/IMSCL1600141.000/Ines_o2ml_com.nsn.cscf-16.0VI.zip",
+    "com.nsn.cscf-16.5VI/o2ml/extra/package/IMSCL1650173.000/Ines_o2ml_com.nsn.cscf-16.5VI.zip",
+    "com.nsn.cscf-17.0VI/o2ml/extra/package/IMSCL1703182.000/Ines_o2ml_com.nsn.cscf-17.0VI.zip",
+    "com.nsn.cscf-17.5VI/o2ml/extra/package/IMSCL1751568.000/Ines_o2ml_com.nsn.cscf-17.5VI.zip"
+  ],
+  "forceDownload": "yes",
+  "NEVersion": "17.5VI",
+  "lastVersion": "17.0VI",
+  "output": {
+    "root": "output/CSCF"
+  },
+
+  "loadProperties": "cscfvi_load.properties",
+
+  "OmesGenerateConfig": {
+      "AdditionalParentDN": "DU-1"
+  }
+}

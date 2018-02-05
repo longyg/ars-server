@@ -1,0 +1,7 @@
+NE Type -> NE release
+                -> adaptation resources
+                            -> svn info
+                            -> svn path
+                -> object load config
+                -> Parent object config
+        -> NE config

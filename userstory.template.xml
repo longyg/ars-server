@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<template sheet="3" name="User Story">
+    <basic>
+        <title row="0"></title>
+        <info name="adapDescription" row="3"></info>
+        <info name="adapId" row="4"></info>
+        <info name="fmDBPrefix" row="5"></info>
+        <info name="pmDBPrefix" row="6"></info>
+        <info name="pmAdaptation" row="7"></info>
+        <info name="pmPbs" row="8"></info>
+    </basic>
+    <userstories>
+        <us name="us1" row="12" sub="13,15"></us>
+        <us name="us2" row="16" sub="17"></us>
+        <us name="us3" row="18" sub="19,22"></us>
+        <us name="us4" row="23" sub="24,37"></us>
+        <us name="us5" row="38" sub="39,55"></us>
+        <us name="us6" row="56" sub="57"></us>
+        <us name="us7" row="58" sub="59"></us>
+        <us name="us8" row="60" sub="61"></us>
+        <us name="us9" row="62" sub="63,65"></us>
+        <us name="us10" row="66" sub="67,69"></us>
+        <us name="us11" row="70" sub="71,79"></us>
+        <us name="us12" row="81" sub="82,83"></us>
+        <us name="us13" row="84" sub="85"></us>
+        <us name="us14" row="86" sub="87,92"></us>
+        <us name="us15" row="93" sub="94,96"></us>
+        <us name="us16" row="97" sub="98,99"></us>
+        <us name="us17" row="100" sub="101,103"></us>
+        <us name="us18" row="104" sub="105,106"></us>
+        <us name="us19" row="107" sub="108,110"></us>
+    </userstories>
+</template>

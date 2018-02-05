@@ -1,0 +1,14 @@
+<config>
+    <parent>
+        <!--
+        <object name="CSCFLCC" parent="PLMN" child="CSCF"></object>
+        -->
+
+        <object name="IMSNFM" child="DU" max="1"></object>
+        <object name="DU" parent="IMSNFM" child="CSCF" max="20"></object>
+    </parent>
+
+    <objectmodel>
+        <object name="CSCF" max="30" min="2" avg="10"></object>
+    </objectmodel>
+</config>
