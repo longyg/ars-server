@@ -177,6 +177,10 @@ public class NeService {
         return releaseConfigRepository.findAll();
     }
 
+    public ReleaseConfig findReleaseConfig(String neType, String neVersion) {
+        return releaseConfigRepository.findByNeTypeAndVersion(neType, neVersion);
+    }
+
     public ReleaseConfig saveReleaseConfig(ReleaseConfig config) {
         if (null == config) {
             return null;
