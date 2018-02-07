@@ -12,7 +12,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.TreeSet;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 
@@ -25,17 +24,17 @@ public class AdaptationResourceParser {
 
     private AdaptationRepository adaptationRepository;
 
-    public void parse(AdaptationRepository adaptationRepository, List<AdaptationResource> resourceList) throws Exception {
+    public void parse(AdaptationRepository adaptationRepository, List<String> resourceList) throws Exception {
         this.adaptationRepository = adaptationRepository;
 
-        for (AdaptationResource resource : resourceList) {
-            parseOneResource(resource);
+        for (String sourcePath : resourceList) {
+            parseOneResource(sourcePath);
         }
     }
 
-    private void parseOneResource(AdaptationResource resource) throws Exception {
-        LOG.info("Parsing resource: " + resource.getLocalPath());
-        InputStream inputstream = new FileInputStream(resource.getLocalPath());
+    private void parseOneResource(String sourcePath) throws Exception {
+        LOG.info("Parsing resource: " + sourcePath);
+        InputStream inputstream = new FileInputStream(sourcePath);
         ManualCloseZipInputStream zin = new ManualCloseZipInputStream(inputstream);
         ZipEntry entry = null;
         try {
@@ -62,8 +61,8 @@ public class AdaptationResourceParser {
                 }
             }
         } catch (IOException e) {
-            LOG.severe("Exception while parsing resource: " + resource.getLocalPath() + e);
-            throw new Exception("Exception while parsing resource: " + resource.getLocalPath(), e);
+            LOG.severe("Exception while parsing resource: " + sourcePath + e);
+            throw new Exception("Exception while parsing resource: " + sourcePath, e);
         } finally {
             try {
                 zin.doClose();

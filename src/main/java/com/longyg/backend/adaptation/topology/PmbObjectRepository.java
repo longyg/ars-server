@@ -5,6 +5,8 @@ import com.longyg.backend.adaptation.pm.*;
 import com.longyg.frontend.model.ars.ArsConfig;
 import com.longyg.frontend.model.config.ParentObject;
 import com.longyg.frontend.model.config.ObjectLoad;
+import com.longyg.frontend.model.ne.ParentHierarchy;
+import com.longyg.frontend.model.ne.ReleaseConfig;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -18,7 +20,7 @@ public class PmbObjectRepository {
 
     private AdaptationRepository adaptationRepository;
 
-    private ArsConfig config;
+    private ReleaseConfig config;
 
     private List<ParentObject> globalObjects;
 
@@ -32,7 +34,7 @@ public class PmbObjectRepository {
         this.allReleaseObjects = allReleaseObjects;
     }
 
-    public PmbObjectRepository(AdaptationRepository adaptationRepository, ArsConfig config, List<ParentObject> globalObjects, List<ObjectLoad> objectLoads) {
+    public PmbObjectRepository(AdaptationRepository adaptationRepository, ReleaseConfig config, List<ParentObject> globalObjects, List<ObjectLoad> objectLoads) {
         this.adaptationRepository = adaptationRepository;
         this.config = config;
         this.globalObjects = globalObjects;
@@ -144,8 +146,8 @@ public class PmbObjectRepository {
             }
         }
 
-        maxPerNet = maxPerNE * config.getMaxNePerNet();
-        avgPerNet = avgPerNE * config.getAvgNePerNet();
+        maxPerNet = maxPerNE * config.getNeSize().getMaxNePerNetwork();
+        avgPerNet = avgPerNE * config.getNeSize().getAvgNePerNetwork();
 
         obj.setMin(1);
         obj.setMax(maxPerNE);
@@ -153,8 +155,8 @@ public class PmbObjectRepository {
         obj.setMaxPerNet(maxPerNet);
         obj.setAvgPerNet(avgPerNet);
         obj.setMaxPerNE(maxPerNE);
-        obj.setMaxNePerNet(config.getMaxNePerNet());
-        obj.setAvgNePerNet(config.getAvgNePerNet());
+        obj.setMaxNePerNet(config.getNeSize().getMaxNePerNetwork());
+        obj.setAvgNePerNet(config.getNeSize().getAvgNePerNetwork());
         obj.setMaxPerRoot(maxPerRoot);
     }
 
@@ -183,38 +185,45 @@ public class PmbObjectRepository {
         return descendant;
     }
 
+    private String getParent(String adaptationId) {
+        List<ParentHierarchy> parentHierarchies = config.getParentHierarchies();
+        for (ParentHierarchy parentHierarchy : parentHierarchies) {
+            if (parentHierarchy.getAdaptationId().equals(adaptationId)) {
+                return parentHierarchy.getHierarchy();
+            }
+        }
+        return null;
+    }
+
     private void addParentObject() throws Exception {
         Map<String, List<PmbObject>> rootObjectMap = getRootObjects();
         for (Map.Entry<String, List<PmbObject>> entry : allReleaseObjects.entrySet()) {
             String adaptationId = entry.getKey();
-            String adapId = adaptationId.replaceAll("\\.", "_");
-            if (config.getParents().containsKey(adapId)) {
-                String parent =  config.getParents().get(adapId);
-                if (null != parent) {
-                    List<PmbObject> rootObjects = rootObjectMap.get(adaptationId);
+            String parent = getParent(adaptationId);
+            if (null != parent) {
+                List<PmbObject> rootObjects = rootObjectMap.get(adaptationId);
 
-                    String lastClass = getLastClass(parent);
-                    ParentObject globalObject = findGlobalObjectByName(lastClass);
-                    if (null == globalObject) {
-                        throw new Exception("Parent Object class '" + lastClass + "' is not defined.");
-                    }
-                    PmbObject pmbObject = new PmbObject();
-                    pmbObject.setAdditional(true);
-                    pmbObject.setName(lastClass);
-                    pmbObject.setNameInOmes(globalObject.getNameInOMeS());
-                    pmbObject.setPresentation(globalObject.getPresentation());
-                    pmbObject.setTransient(globalObject.isTransient());
+                String lastClass = getLastClass(parent);
+                ParentObject globalObject = findGlobalObjectByName(lastClass);
+                if (null == globalObject) {
+                    throw new Exception("Parent Object class '" + lastClass + "' is not defined.");
+                }
+                PmbObject pmbObject = new PmbObject();
+                pmbObject.setAdditional(true);
+                pmbObject.setName(lastClass);
+                pmbObject.setNameInOmes(globalObject.getNameInOMeS());
+                pmbObject.setPresentation(globalObject.getPresentation());
+                pmbObject.setTransient(globalObject.isTransient());
 
-                    addPmbObjectToList(adaptationId, pmbObject);
+                addPmbObjectToList(adaptationId, pmbObject);
 
-                    String parentHierarchy = getParentHierarchy(parent);
+                String parentHierarchy = getParentHierarchy(parent);
 
-                    for (PmbObject rootObject : rootObjects) {
-                        rootObject.addParentObject(pmbObject);
-                        pmbObject.addChildObject(rootObject);
+                for (PmbObject rootObject : rootObjects) {
+                    rootObject.addParentObject(pmbObject);
+                    pmbObject.addChildObject(rootObject);
 
-                        createPmbObjectsFromParentHierarchy(adaptationId, pmbObject, parentHierarchy);
-                    }
+                    createPmbObjectsFromParentHierarchy(adaptationId, pmbObject, parentHierarchy);
                 }
             }
         }

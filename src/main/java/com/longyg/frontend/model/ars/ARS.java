@@ -3,6 +3,7 @@ package com.longyg.frontend.model.ars;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -98,5 +99,19 @@ public class ARS {
 
     public void setOlderNeVersions(List<String> olderNeVersions) {
         this.olderNeVersions = olderNeVersions;
+    }
+
+    public static void main(String[] args) throws Exception {
+        String path = "http://www.yongganglong.com/adaptation/com.nsn.cscf/18.0C/com.nsn.cscf-18.0C.zip?test=1#title";
+        URL url = new URL(path);
+        System.out.println(url.getProtocol());
+        System.out.println(url.getHost());
+        System.out.println(url.getPath());
+        System.out.println(url.getPort());
+        System.out.println(url.getFile());
+        System.out.println(url.getQuery());
+        System.out.println(url.getRef());
+        String port = (url.getPort() == -1) ? "" : ":" + url.getPort();
+        System.out.println(url.getProtocol() + "://" + url.getHost() + port);
     }
 }

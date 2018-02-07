@@ -11,6 +11,8 @@ import com.longyg.frontend.model.ars.om.ObjectModelSpec;
 import com.longyg.frontend.model.config.ParentObject;
 import com.longyg.frontend.model.config.ObjectLoad;
 import com.longyg.frontend.model.ne.NeType;
+import com.longyg.frontend.model.ne.ParentHierarchy;
+import com.longyg.frontend.model.ne.ReleaseConfig;
 import com.longyg.frontend.service.ArsService;
 import com.longyg.frontend.service.ConfigService;
 import com.longyg.frontend.service.NeService;
@@ -31,13 +33,13 @@ public class ObjectModelGenerator {
     @Autowired
     private NeService neService;
 
-    private ArsConfig config;
+    private ReleaseConfig config;
 
     private AdaptationRepository adaptationRepository;
 
     private PmbObjectRepository pmbObjectRepository;
 
-    public ObjectModelSpec generateAndSave(ArsConfig config, AdaptationRepository adaptationRepository) throws Exception {
+    public ObjectModelSpec generateAndSave(ReleaseConfig config, AdaptationRepository adaptationRepository) throws Exception {
         this.config = config;
         this.adaptationRepository = adaptationRepository;
 
@@ -48,7 +50,7 @@ public class ObjectModelGenerator {
 
     private void initRepository() throws Exception {
         List<ParentObject> globalObjects = configService.findParentObjects();
-        List<ObjectLoad> objectLoads = configService.findObjectLoads(config.getLoadIds());
+        List<ObjectLoad> objectLoads = configService.findObjectLoads(config.getObjectLoads());
         pmbObjectRepository = new PmbObjectRepository(adaptationRepository, config, globalObjects, objectLoads);
         pmbObjectRepository.init();
     }

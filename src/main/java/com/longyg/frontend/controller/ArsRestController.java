@@ -1,5 +1,6 @@
 package com.longyg.frontend.controller;
 
+import com.longyg.backend.ars.generator.ArsCreator;
 import com.longyg.frontend.model.ars.ARS;
 import com.longyg.frontend.service.ArsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,9 @@ import java.util.List;
 public class ArsRestController {
     @Autowired
     private ArsService arsService;
+
+    @Autowired
+    private ArsCreator arsCreator;
 
     @GetMapping("/api/ars")
     public List<ARS> getAllArs() {
@@ -30,7 +34,11 @@ public class ArsRestController {
         if (null != existArs) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
-        ARS savedArs = arsService.saveArs(ars);
-        return new ResponseEntity<>(savedArs, HttpStatus.OK);
+        try {
+            ARS savedArs = arsCreator.generateAndSave(ars);
+            return new ResponseEntity<>(savedArs, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

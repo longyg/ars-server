@@ -108,4 +108,59 @@ public class SvnDownloader {
         }
         return new File(outDirPath + File.separator + filename);
     }
+
+    public String download(String rootUrl, String username, String password, String filePath, String localPath, String filename) throws Exception {
+        setupLibrary();
+
+        repository = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(rootUrl));
+
+        ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(username, password);
+        repository.setAuthenticationManager(authManager);
+
+        SVNProperties fileProperties = new SVNProperties();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        File outFile = createDownloadOutputFile(localPath, filename);
+
+        try {
+            SVNNodeKind nodeKind = repository.checkPath(filePath, -1);
+
+            if (nodeKind == SVNNodeKind.NONE) {
+                LOG.error("There is no entry at '" + filePath + "' in SVN");
+                throw new Exception("There is no entry at '" + filePath + "' in SVN");
+            } else if (nodeKind == SVNNodeKind.DIR) {
+                LOG.error("The entry at '" + filePath
+                        + "' is a directory while a file was expected.");
+                throw new Exception("The entry at '" + filePath + "' is a directory while a file was expected.");
+            } else if (nodeKind == SVNNodeKind.FILE){
+                LOG.debug("Valid svn file path: " + filePath);
+            }
+            /*
+             * Gets the contents and properties of the file located at filePath
+             * in the repository at the latest revision (which is meant by a
+             * negative revision number).
+             */
+            repository.getFile(filePath, -1, fileProperties, baos);
+
+            baos.writeTo(new FileOutputStream(outFile));
+
+            LOG.info("downloaded file " + outFile.getAbsolutePath());
+
+            return outFile.getAbsolutePath();
+        } catch (SVNException svne) {
+            LOG.error("Error while fetching the file contents and properties: " + svne.getMessage());
+            throw new Exception("Error while fetching the file contents and properties: ", svne);
+        }
+    }
+
+    private File createDownloadOutputFile(String path, String filename) throws Exception {
+        File outDir = new File(path);
+        if (outDir.exists() && !outDir.isDirectory()) {
+            LOG.error(outDir.getAbsolutePath() + " is not a directory");
+            throw new Exception(outDir.getAbsolutePath() + " is not a directory");
+        } else if (!outDir.exists()) {
+            outDir.mkdirs();
+        }
+        return new File(path + File.separator + filename);
+    }
 }

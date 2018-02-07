@@ -5,8 +5,6 @@ import com.longyg.backend.adaptation.main.AdaptationResourceParser;
 import com.longyg.backend.adaptation.svn.SvnDownloader;
 import com.longyg.frontend.model.ars.ARS;
 import com.longyg.frontend.model.ars.om.ObjectModelSpec;
-import com.longyg.frontend.model.config.AdaptationResource;
-import com.longyg.frontend.model.config.InterfaceObject;
 import com.longyg.frontend.model.ne.Adaptation;
 import com.longyg.frontend.model.ne.ReleaseConfig;
 import com.longyg.frontend.service.ArsService;
@@ -16,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -23,6 +22,7 @@ import java.util.logging.Logger;
 @Component
 public class ArsCreator {
     private static final Logger LOG = Logger.getLogger(ArsCreator.class.getName());
+    private static final String ROOT_DOWNLOAD_FOLDER = "resources";
 
     @Autowired
     private ArsService arsService;
@@ -63,107 +63,69 @@ public class ArsCreator {
         }
 
         initAdaptationRepository();
-
-        String usId = usGenerator.generateAndSave(config);
         ObjectModelSpec om = omGenerator.generateAndSave(config, adaptationRepository);
+        this.ars.setObjectModel(om.getId());
+
+        /**
+        String usId = usGenerator.generateAndSave(config);
         String pmDlId = pmDataLoadGenerator.generateAndSave(config, adaptationRepository, om);
         String counterId = counterGenerator.generateAndSave(config, pmDataLoadGenerator.getPmDataLoadRepository());
         String alarmId = alarmGenerator.generateAndSave(config, adaptationRepository);
 
         this.ars.setUserStory(usId);
-        this.ars.setObjectModel(om.getId());
+
         this.ars.setPmDataLoad(pmDlId);
         this.ars.setCounter(counterId);
         this.ars.setAlarm(alarmId);
+         **/
 
         return arsService.saveArs(this.ars);
     }
 
     private void initAdaptationRepository() throws Exception {
-        List<AdaptationResource> resourceList = new ArrayList<>();
-        for (String srcId : config.getResources()) {
-            AdaptationResource src = configService.findResource(srcId);
-            downloadAndSave(src);
-
-            resourceList.add(src);
-        }
+        List<String> resourceList = resolveAdaptationResources();
         adaptationRepository = new AdaptationRepository();
         resourceParser.parse(adaptationRepository, resourceList);
     }
 
-    private List<Adaptation> resolveAdaptations() {
-        List<Adaptation> adaptationList = new ArrayList<>();
-        List<AdaptationResource> resources = new ArrayList<>();
-        for (String id: this.config.getAdaptations()) {
-            Adaptation adaptation = neService.findAdaptation(id);
-            AdaptationResource src = new AdaptationResource();
-            com.longyg.frontend.model.config.Adaptation adap = new com.longyg.frontend.model.config.Adaptation();
-            adap.setId(adaptation.getAdaptationId());
-            adap.setRelease(adaptation.getAdaptationRelease());
-            src.setAdaptation(adap);
-            src.setLocalPath(this.ars.getNeType() + File.separator + this.ars.getNeVersion() + File.separator + adaptation.getAdaptationId() + File.separator + adaptation.getAdaptationRelease());
-            adaptationList.add(adaptation);
-        }
+    private List<String> resolveAdaptationResources() throws Exception {
+        List<String> resourceList = new ArrayList<>();
+        downResource(this.config, resourceList);
+
         ReleaseConfig lastConfig = neService.findReleaseConfig(this.ars.getNeType(), this.ars.getLastNeVersion());
-        if (null != lastConfig) {
-            for (String id: lastConfig.getAdaptations()) {
-                Adaptation adaptation = neService.findAdaptation(id);
-                adaptationList.add(adaptation);
-            }
-        }
+        downResource(lastConfig, resourceList);
+
         for (String olderVersion: this.ars.getOlderNeVersions()) {
             ReleaseConfig olderConfig = neService.findReleaseConfig(this.ars.getNeType(), olderVersion);
-            if (null != olderConfig) {
-                for (String id: olderConfig.getAdaptations()) {
-                    Adaptation adaptation = neService.findAdaptation(id);
-                    adaptationList.add(adaptation);
-                }
+            downResource(olderConfig, resourceList);
+        }
+        return resourceList;
+    }
+
+    private void downResource(ReleaseConfig config, List<String> resourceList) throws Exception {
+        if (null != config) {
+            for (String id : config.getAdaptations()) {
+                Adaptation adaptation = neService.findAdaptation(id);
+                String sourcePath = downloadAdaptation(config, adaptation);
+                resourceList.add(sourcePath);
             }
         }
-        return adaptationList;
     }
 
-    private void downloadAdaptations(List<Adaptation> adaptationList) {
-
-    }
-
-    private List<InterfaceObject> getInterfaces() {
-        List<InterfaceObject> list = new ArrayList<>();
-        for (String ifId : config.getInterfaces()) {
-            InterfaceObject ifo = configService.findInterface(ifId);
-            if (null != ifo) {
-                list.add(ifo);
-            } else {
-                LOG.severe("There is no interface object with id: " + ifId);
-            }
-        }
-        return list;
-    }
-
-    private List<AdaptationResource> getResources() {
-        List<AdaptationResource> resources = new ArrayList<>();
-
-        for (String srcId : config.getResources()) {
-            AdaptationResource resource = configService.findResource(srcId);
-            if (null != resource) {
-                resources.add(resource);
-            }
-        }
-        return resources;
-    }
-
-    private void downloadAndSave(AdaptationResource src) throws Exception {
-        // If the file already exists, no need to download
-        if (src.getLocalPath() != null) {
-            File localFile = new File(src.getLocalPath());
-            if (localFile.exists())
-                return;
-        }
+    private String downloadAdaptation(ReleaseConfig config, Adaptation adaptation) throws Exception {
+        URL url = new URL(adaptation.getSourcePath());
+        String host = url.getProtocol() + "://" + url.getHost();
+        String port = (url.getPort() == -1) ? "" : ":" + url.getPort();
+        String svnRoot = host + port;
+        String path = url.getPath();
+        String filename = path.substring(path.lastIndexOf("/"));
+        String localPath = ROOT_DOWNLOAD_FOLDER + File.separator +
+                config.getNeType() + File.separator +
+                config.getNeVersion() + File.separator +
+                adaptation.getAdaptationId() + File.separator +
+                adaptation.getAdaptationRelease();
 
         SvnDownloader downloader = new SvnDownloader();
-        downloader.download(src);
-
-        // Save to DB for the local file path
-        configService.saveResource(src);
+        return downloader.download(svnRoot, "", "", path, localPath, filename);
     }
 }
