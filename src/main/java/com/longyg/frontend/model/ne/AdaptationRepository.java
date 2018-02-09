@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface AdaptationRepository extends MongoRepository<Adaptation, String> {
     void deleteByIdIn(List<String> ids);
+
+    List<Adaptation> findByNeType(String neType);
 }

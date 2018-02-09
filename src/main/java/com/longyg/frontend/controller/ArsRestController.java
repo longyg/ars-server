@@ -9,9 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 @RestController
 public class ArsRestController {
+    private static final Logger LOG = Logger.getLogger(ArsCreator.class.getName());
     @Autowired
     private ArsService arsService;
 
@@ -38,6 +40,8 @@ public class ArsRestController {
             ARS savedArs = arsCreator.generateAndSave(ars);
             return new ResponseEntity<>(savedArs, HttpStatus.OK);
         } catch (Exception e) {
+            e.printStackTrace();
+            LOG.severe("Exception while generating ARS: " + e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

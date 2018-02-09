@@ -139,6 +139,10 @@ public class NeService {
         return adaptationRepository.findAll();
     }
 
+    public List<Adaptation> findAdaptations(String neType) {
+        return adaptationRepository.findByNeType(neType);
+    }
+
     public Adaptation saveAdaptation(Adaptation adaptation) {
         if (null == adaptation) {
             return null;

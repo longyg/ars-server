@@ -116,16 +116,30 @@ public class ArsCreator {
         URL url = new URL(adaptation.getSourcePath());
         String host = url.getProtocol() + "://" + url.getHost();
         String port = (url.getPort() == -1) ? "" : ":" + url.getPort();
-        String svnRoot = host + port;
+        String sourcePath = adaptation.getSourcePath();
+        String rootUrl = sourcePath.substring(0, sourcePath.lastIndexOf("/") + 1);
         String path = url.getPath();
-        String filename = path.substring(path.lastIndexOf("/"));
+        String filename = path.substring(path.lastIndexOf("/") + 1);
         String localPath = ROOT_DOWNLOAD_FOLDER + File.separator +
                 config.getNeType() + File.separator +
                 config.getNeVersion() + File.separator +
                 adaptation.getAdaptationId() + File.separator +
                 adaptation.getAdaptationRelease();
 
-        SvnDownloader downloader = new SvnDownloader();
-        return downloader.download(svnRoot, "", "", path, localPath, filename);
+        File localFile = new File(localPath + File.separator + filename);
+        boolean needDownload = false;
+        if (localFile.exists() && localFile.isFile()) {
+            if (this.ars.isForceDownload()) {
+                needDownload = true;
+            }
+        } else {
+            needDownload = true;
+        }
+        if (needDownload) {
+            SvnDownloader downloader = new SvnDownloader();
+            return downloader.download(rootUrl, "ylong", "$Leo2222*", filename, localPath, filename);
+        } else {
+            return localFile.getAbsolutePath();
+        }
     }
 }

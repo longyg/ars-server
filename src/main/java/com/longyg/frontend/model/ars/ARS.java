@@ -21,6 +21,8 @@ public class ARS {
     private String counter;
     private String alarm;
 
+    private boolean forceDownload;
+
     public String getId() {
         return id;
     }
@@ -99,6 +101,14 @@ public class ARS {
 
     public void setOlderNeVersions(List<String> olderNeVersions) {
         this.olderNeVersions = olderNeVersions;
+    }
+
+    public boolean isForceDownload() {
+        return forceDownload;
+    }
+
+    public void setForceDownload(boolean forceDownload) {
+        this.forceDownload = forceDownload;
     }
 
     public static void main(String[] args) throws Exception {

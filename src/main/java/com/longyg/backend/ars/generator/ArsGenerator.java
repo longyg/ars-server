@@ -53,11 +53,11 @@ public class ArsGenerator {
     public ARS generateAndSave(ArsConfig config) throws Exception {
         this.config = config;
 
-        initAdaptationRepository();
+        //initAdaptationRepository();
 
         String usId = usGenerator.generateAndSave(config);
-        ObjectModelSpec om = omGenerator.generateAndSave(config, adaptationRepository);
-        String pmDlId = pmDataLoadGenerator.generateAndSave(config, adaptationRepository, om);
+        //ObjectModelSpec om = omGenerator.generateAndSave(config, adaptationRepository);
+        //String pmDlId = pmDataLoadGenerator.generateAndSave(config, adaptationRepository, om);
         String counterId = counterGenerator.generateAndSave(config, pmDataLoadGenerator.getPmDataLoadRepository());
         String alarmId = alarmGenerator.generateAndSave(config, adaptationRepository);
 
@@ -65,14 +65,15 @@ public class ArsGenerator {
         ars.setNeType(config.getNeType());
         ars.setNeVersion(config.getNeVersion());
         ars.setUserStory(usId);
-        ars.setObjectModel(om.getId());
-        ars.setPmDataLoad(pmDlId);
+        //ars.setObjectModel(om.getId());
+        //ars.setPmDataLoad(pmDlId);
         ars.setCounter(counterId);
         ars.setAlarm(alarmId);
 
         return arsService.saveArs(ars);
     }
 
+    /**
     private void initAdaptationRepository() throws Exception {
         List<AdaptationResource> resourceList = new ArrayList<>();
         for (String srcId : config.getResources()) {
@@ -84,6 +85,7 @@ public class ArsGenerator {
         adaptationRepository = new AdaptationRepository();
         resourceParser.parse(adaptationRepository, resourceList);
     }
+     **/
 
     private List<InterfaceObject> getInterfaces() {
         List<InterfaceObject> list = new ArrayList<>();

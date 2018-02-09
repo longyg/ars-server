@@ -126,7 +126,7 @@ public class SvnDownloader {
             SVNNodeKind nodeKind = repository.checkPath(filePath, -1);
 
             if (nodeKind == SVNNodeKind.NONE) {
-                LOG.error("There is no entry at '" + filePath + "' in SVN");
+                LOG.error("There is no entry at '" + filePath + "' in SVN: " + rootUrl);
                 throw new Exception("There is no entry at '" + filePath + "' in SVN");
             } else if (nodeKind == SVNNodeKind.DIR) {
                 LOG.error("The entry at '" + filePath

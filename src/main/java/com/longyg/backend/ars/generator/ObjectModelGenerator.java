@@ -10,6 +10,7 @@ import com.longyg.frontend.model.ars.om.ObjectClassInfo;
 import com.longyg.frontend.model.ars.om.ObjectModelSpec;
 import com.longyg.frontend.model.config.ParentObject;
 import com.longyg.frontend.model.config.ObjectLoad;
+import com.longyg.frontend.model.ne.Adaptation;
 import com.longyg.frontend.model.ne.NeType;
 import com.longyg.frontend.model.ne.ParentHierarchy;
 import com.longyg.frontend.model.ne.ReleaseConfig;
@@ -60,8 +61,11 @@ public class ObjectModelGenerator {
         spec.setNeType(config.getNeType());
         spec.setNeVersion(config.getNeVersion());
 
-        NeType neType = neService.findNeTypeByName(config.getNeType());
-        List<String> adaptationIds = neType.getAdaptSet();
+        List<Adaptation> adaptations = neService.findAdaptations(config.getNeType());
+        List<String> adaptationIds = new ArrayList<>();
+        adaptations.forEach(adaptation -> {
+            adaptationIds.add(adaptation.getAdaptationId());
+        });
 
         LOG.info("=====> primary adaptation ID: " + adaptationIds.get(0));
 
