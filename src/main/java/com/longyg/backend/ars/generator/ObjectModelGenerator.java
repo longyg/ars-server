@@ -61,7 +61,11 @@ public class ObjectModelGenerator {
         spec.setNeType(config.getNeType());
         spec.setNeVersion(config.getNeVersion());
 
-        List<Adaptation> adaptations = neService.findAdaptations(config.getNeType());
+        List<Adaptation> adaptations = new ArrayList<>();
+        config.getAdaptations().forEach(id -> {
+            Adaptation adaptation = neService.findAdaptation(id);
+            adaptations.add(adaptation);
+        });
         List<String> adaptationIds = new ArrayList<>();
         adaptations.forEach(adaptation -> {
             adaptationIds.add(adaptation.getAdaptationId());
