@@ -1,8 +1,10 @@
 package com.longyg.backend.adaptation.pm;
 
 import com.longyg.backend.adaptation.main.AdaptationRepository;
+import com.longyg.frontend.model.ars.ARS;
 import com.longyg.frontend.model.ars.ArsConfig;
 import com.longyg.frontend.model.ars.pm.MeasurementInfo;
+import com.longyg.frontend.model.ne.ReleaseConfig;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,7 +16,7 @@ public class PmDataLoadRepository {
     // value: measurement list
     private Map<String, List<MeasurementInfo>> allReleaseMeasurements = new HashMap<>();
 
-    private ArsConfig config;
+    private ARS ars;
 
     private AdaptationRepository adaptationRepository;
 
@@ -22,14 +24,14 @@ public class PmDataLoadRepository {
         return allReleaseMeasurements;
     }
 
-    public PmDataLoadRepository(ArsConfig config, AdaptationRepository adaptationRepository) {
-        this.config = config;
+    public PmDataLoadRepository(ARS ars, AdaptationRepository adaptationRepository) {
+        this.ars = ars;
         this.adaptationRepository = adaptationRepository;
     }
 
     public void init() {
-        createMisForVersion(config.getNeVersion());
-        createMisForVersion(config.getLastVersion());
+        createMisForVersion(this.ars.getNeVersion());
+        createMisForVersion(this.ars.getLastNeVersion());
 
         Map<String, List<PmAdaptation>> pmAdaptationsMap = adaptationRepository.getPmAdaptations();
         for (Map.Entry<String, List<PmAdaptation>> entry : pmAdaptationsMap.entrySet())

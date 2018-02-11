@@ -2,12 +2,14 @@ package com.longyg.backend.ars.generator;
 
 import com.longyg.backend.adaptation.main.AdaptationRepository;
 import com.longyg.backend.adaptation.pm.PmDataLoadRepository;
+import com.longyg.frontend.model.ars.ARS;
 import com.longyg.frontend.model.ars.ArsConfig;
 import com.longyg.frontend.model.ars.om.ObjectClassInfo;
 import com.longyg.frontend.model.ars.om.ObjectModelSpec;
 import com.longyg.frontend.model.ars.pm.ArsMeasurement;
 import com.longyg.frontend.model.ars.pm.MeasurementInfo;
 import com.longyg.frontend.model.ars.pm.PmDataLoadSpec;
+import com.longyg.frontend.model.ne.ReleaseConfig;
 import com.longyg.frontend.service.ArsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -26,7 +28,9 @@ public class PmDataLoadGenerator {
     @Autowired
     private ArsService arsService;
 
-    private ArsConfig config;
+//    private ReleaseConfig config;
+
+    private ARS ars;
 
     private AdaptationRepository adaptationRepository;
 
@@ -34,8 +38,9 @@ public class PmDataLoadGenerator {
 
     private ObjectModelSpec om;
 
-    public String generateAndSave(ArsConfig config, AdaptationRepository adaptationRepository, ObjectModelSpec om) throws Exception {
-        this.config = config;
+    public String generateAndSave(ARS ars, AdaptationRepository adaptationRepository, ObjectModelSpec om) throws Exception {
+//        this.config = config;
+        this.ars = ars;
         this.adaptationRepository = adaptationRepository;
         this.om = om;
 
@@ -47,8 +52,8 @@ public class PmDataLoadGenerator {
 
     private PmDataLoadSpec generateAndSave() throws Exception {
         PmDataLoadSpec spec = new PmDataLoadSpec();
-        spec.setNeType(config.getNeType());
-        spec.setNeVersion(config.getNeVersion());
+        spec.setNeType(this.ars.getNeType());
+        spec.setNeVersion(this.ars.getNeVersion());
 
         for (Map.Entry<String, List<MeasurementInfo>> entry : pmDataLoadRepository.getAllReleaseMeasurements().entrySet()) {
             String adaptationId = entry.getKey();
@@ -78,7 +83,7 @@ public class PmDataLoadGenerator {
         meas.setName(mi.getName());
         meas.setNameInOmes(mi.getNameInOmes());
         meas.setMeasuredObject(mi.getMeasuredObject());
-        meas.setSupported(mi.getSupportedVersions().contains(config.getNeVersion()));
+        meas.setSupported(mi.getSupportedVersions().contains(this.ars.getNeVersion()));
         meas.setSupportedPreviousVersions(getOtherVersions(mi));
         meas.setDimensions(mi.getDimensions());
 
@@ -89,8 +94,8 @@ public class PmDataLoadGenerator {
         meas.setAvgPerNet(oci.getAvgPerNet());
         meas.setMaxPerNet(oci.getMaxPerNet());
         meas.setMaxPerNe(oci.getMaxPerNE());
-        meas.setCounterNumber(getCnOfVersion(mi, config.getNeVersion()));
-        meas.setCounterNumberOfLastVersion(getCnOfVersion(mi, config.getLastVersion()));
+        meas.setCounterNumber(getCnOfVersion(mi, this.ars.getNeVersion()));
+        meas.setCounterNumberOfLastVersion(getCnOfVersion(mi, this.ars.getLastNeVersion()));
         meas.setDelta(meas.getCounterNumber() - meas.getCounterNumberOfLastVersion());
         meas.setAggObject(meas.getMeasuredObject());
         meas.setMphPerNE(meas.getMaxPerNe() * meas.getActive() * (60 / meas.getMinimalInterval()));
@@ -139,7 +144,7 @@ public class PmDataLoadGenerator {
     private List<String> getOtherVersions(MeasurementInfo mi) {
         List<String> otherVerions = new ArrayList<>();
         for (String version : mi.getSupportedVersions()) {
-            if (!version.equals(config.getNeVersion())) {
+            if (!version.equals(this.ars.getNeVersion())) {
                 otherVerions.add(version);
             }
         }
@@ -147,7 +152,7 @@ public class PmDataLoadGenerator {
     }
 
     private void initRepository() {
-        pmDataLoadRepository = new PmDataLoadRepository(config, adaptationRepository);
+        pmDataLoadRepository = new PmDataLoadRepository(ars, adaptationRepository);
         pmDataLoadRepository.init();
     }
 

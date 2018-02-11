@@ -66,15 +66,15 @@ public class ArsCreator {
         ObjectModelSpec om = omGenerator.generateAndSave(config, adaptationRepository);
         this.ars.setObjectModel(om.getId());
 
+        String pmDlId = pmDataLoadGenerator.generateAndSave(ars, adaptationRepository, om);
+        this.ars.setPmDataLoad(pmDlId);
+
         /**
         String usId = usGenerator.generateAndSave(config);
-        String pmDlId = pmDataLoadGenerator.generateAndSave(config, adaptationRepository, om);
         String counterId = counterGenerator.generateAndSave(config, pmDataLoadGenerator.getPmDataLoadRepository());
         String alarmId = alarmGenerator.generateAndSave(config, adaptationRepository);
 
         this.ars.setUserStory(usId);
-
-        this.ars.setPmDataLoad(pmDlId);
         this.ars.setCounter(counterId);
         this.ars.setAlarm(alarmId);
          **/
