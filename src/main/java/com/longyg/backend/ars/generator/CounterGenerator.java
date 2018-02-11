@@ -7,6 +7,7 @@ import com.longyg.frontend.model.ars.counter.ArsCounter;
 import com.longyg.frontend.model.ars.counter.CounterMeas;
 import com.longyg.frontend.model.ars.counter.CounterSpec;
 import com.longyg.frontend.model.ars.pm.MeasurementInfo;
+import com.longyg.frontend.model.ne.ReleaseConfig;
 import com.longyg.frontend.service.ArsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,11 +21,11 @@ public class CounterGenerator {
     @Autowired
     private ArsService arsService;
 
-    private ArsConfig config;
+    private ReleaseConfig config;
 
     private PmDataLoadRepository pmDataLoadRepository;
 
-    public String generateAndSave(ArsConfig config, PmDataLoadRepository pmDataLoadRepository) {
+    public String generateAndSave(ReleaseConfig config, PmDataLoadRepository pmDataLoadRepository) {
         this.config = config;
         this.pmDataLoadRepository = pmDataLoadRepository;
 

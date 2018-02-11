@@ -63,20 +63,21 @@ public class ArsCreator {
         }
 
         initAdaptationRepository();
+
         ObjectModelSpec om = omGenerator.generateAndSave(config, adaptationRepository);
         this.ars.setObjectModel(om.getId());
 
         String pmDlId = pmDataLoadGenerator.generateAndSave(ars, adaptationRepository, om);
         this.ars.setPmDataLoad(pmDlId);
 
+        String counterId = counterGenerator.generateAndSave(config, pmDataLoadGenerator.getPmDataLoadRepository());
+        this.ars.setCounter(counterId);
+
+        String alarmId = alarmGenerator.generateAndSave(ars, adaptationRepository);
+        this.ars.setAlarm(alarmId);
+
         /**
         String usId = usGenerator.generateAndSave(config);
-        String counterId = counterGenerator.generateAndSave(config, pmDataLoadGenerator.getPmDataLoadRepository());
-        String alarmId = alarmGenerator.generateAndSave(config, adaptationRepository);
-
-        this.ars.setUserStory(usId);
-        this.ars.setCounter(counterId);
-        this.ars.setAlarm(alarmId);
          **/
 
         return arsService.saveArs(this.ars);

@@ -58,8 +58,8 @@ public class ArsGenerator {
         String usId = usGenerator.generateAndSave(config);
         //ObjectModelSpec om = omGenerator.generateAndSave(config, adaptationRepository);
         //String pmDlId = pmDataLoadGenerator.generateAndSave(config, adaptationRepository, om);
-        String counterId = counterGenerator.generateAndSave(config, pmDataLoadGenerator.getPmDataLoadRepository());
-        String alarmId = alarmGenerator.generateAndSave(config, adaptationRepository);
+        //String counterId = counterGenerator.generateAndSave(config, pmDataLoadGenerator.getPmDataLoadRepository());
+        //String alarmId = alarmGenerator.generateAndSave(config, adaptationRepository);
 
         ARS ars = new ARS();
         ars.setNeType(config.getNeType());
@@ -67,8 +67,8 @@ public class ArsGenerator {
         ars.setUserStory(usId);
         //ars.setObjectModel(om.getId());
         //ars.setPmDataLoad(pmDlId);
-        ars.setCounter(counterId);
-        ars.setAlarm(alarmId);
+       // ars.setCounter(counterId);
+       // ars.setAlarm(alarmId);
 
         return arsService.saveArs(ars);
     }

@@ -2,6 +2,8 @@ package com.longyg.frontend.controller;
 
 import com.longyg.backend.ars.generator.ArsCreator;
 import com.longyg.frontend.model.ars.ARS;
+import com.longyg.frontend.model.ars.alarm.AlarmSpec;
+import com.longyg.frontend.model.ars.counter.CounterSpec;
 import com.longyg.frontend.model.ars.om.ObjectModelSpec;
 import com.longyg.frontend.model.ars.pm.PmDataLoadSpec;
 import com.longyg.frontend.service.ArsService;
@@ -59,4 +61,10 @@ public class ArsRestController {
 
     @GetMapping("/api/pmdl/{id}")
     public PmDataLoadSpec getPmDataLoadSpec(@PathVariable("id") String id) { return arsService.findPmDL(id); }
+
+    @GetMapping("/api/counter/{id}")
+    public CounterSpec getCounterSpec(@PathVariable("id") String id) { return arsService.findCounter(id); }
+
+    @GetMapping("/api/alarm/{id}")
+    public AlarmSpec getAlarmSpec(@PathVariable("id") String id) { return arsService.findAlarm(id); }
 }

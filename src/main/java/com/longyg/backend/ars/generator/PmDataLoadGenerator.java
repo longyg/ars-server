@@ -122,7 +122,9 @@ public class PmDataLoadGenerator {
 
     private int getCnOfVersion(MeasurementInfo mi, String version) {
         if (null != version) {
-            return mi.getAllReleaseCounters().get(version).size();
+            if (mi.getAllReleaseCounters().containsKey(version)) {
+                return mi.getAllReleaseCounters().get(version).size();
+            }
         }
         return 0;
     }

@@ -3,6 +3,7 @@ package com.longyg.backend.ars.generator;
 import com.longyg.backend.adaptation.fm.Alarm;
 import com.longyg.backend.adaptation.fm.FmAdaptation;
 import com.longyg.backend.adaptation.main.AdaptationRepository;
+import com.longyg.frontend.model.ars.ARS;
 import com.longyg.frontend.model.ars.ArsConfig;
 import com.longyg.frontend.model.ars.alarm.AlarmSpec;
 import com.longyg.frontend.model.ars.alarm.ArsAlarm;
@@ -22,12 +23,12 @@ public class AlarmGenerator {
     @Autowired
     private ArsService arsService;
 
-    private ArsConfig config;
+    private ARS ars;
 
     private AdaptationRepository adaptationRepository;
 
-    public String generateAndSave(ArsConfig config, AdaptationRepository adaptationRepository) {
-        this.config = config;
+    public String generateAndSave(ARS ars, AdaptationRepository adaptationRepository) {
+        this.ars = ars;
         this.adaptationRepository = adaptationRepository;
 
         AlarmSpec spec = generateAndSave();
@@ -37,8 +38,8 @@ public class AlarmGenerator {
 
     private AlarmSpec generateAndSave() {
         AlarmSpec spec = new AlarmSpec();
-        spec.setNeType(config.getNeType());
-        spec.setNeVersion(config.getNeVersion());
+        spec.setNeType(this.ars.getNeType());
+        spec.setNeVersion(this.ars.getNeVersion());
 
         for (Map.Entry<String, List<FmAdaptation>> entry : adaptationRepository.getFmAdaptations().entrySet()) {
             String adaptationId = entry.getKey();
@@ -86,7 +87,7 @@ public class AlarmGenerator {
         if (adaptationRepository.getFmAdaptations().containsKey(adaptationId)) {
             List<FmAdaptation> fmAdaptations = adaptationRepository.getFmAdaptations().get(adaptationId);
             for (FmAdaptation fmAdaptation : fmAdaptations) {
-                if (fmAdaptation.getAdapRelease().equals(config.getLastVersion())) {
+                if (fmAdaptation.getAdapRelease().equals(this.ars.getLastNeVersion())) {
                     for (Alarm alarm : fmAdaptation.getAlarms()) {
                         if (alarm.getAlarmNumber().equals(alarmNumber)) {
                             return alarm;
@@ -102,7 +103,7 @@ public class AlarmGenerator {
         createArsAlarmForCurrentVersion(adaptationId, fmAdaptations, spec);
 
         for (FmAdaptation fmAdaptation : fmAdaptations) {
-            if (!fmAdaptation.getAdapRelease().equals(config.getNeVersion())) {
+            if (!fmAdaptation.getAdapRelease().equals(this.ars.getNeVersion())) {
                 for (Alarm alarm : fmAdaptation.getAlarms()) {
                     ArsAlarm arsAlarm = createArsAlarm(alarm);
 
@@ -116,7 +117,7 @@ public class AlarmGenerator {
 
     private void createArsAlarmForCurrentVersion(String adaptationId, List<FmAdaptation> fmAdaptations, AlarmSpec spec) {
         for (FmAdaptation fmAdaptation : fmAdaptations) {
-            if (fmAdaptation.getAdapRelease().equals(config.getNeVersion())) {
+            if (fmAdaptation.getAdapRelease().equals(this.ars.getNeVersion())) {
                 for (Alarm alarm : fmAdaptation.getAlarms()) {
                     ArsAlarm arsAlarm = createArsAlarm(alarm);
 
