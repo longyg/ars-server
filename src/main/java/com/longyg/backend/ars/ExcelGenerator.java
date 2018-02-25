@@ -20,11 +20,11 @@ public class ExcelGenerator {
     public void generate(String outPath) throws Exception {
         try (FileOutputStream fileOut = new FileOutputStream(outPath)) {
 
-            int usSheet = TemplateRepository.getTplDef().getSheet();
+            int usSheet = TemplateRepository.getUsTplDef().getSheet();
             USExcelGenerator usExcelGenerator = new USExcelGenerator(wb.getSheetAt(usSheet));
             usExcelGenerator.generate();
 
-            int objectModelSheet = TemplateRepository.getObjectModelTplDef().getSheet();
+            int objectModelSheet = TemplateRepository.getOmTplDef().getSheet();
             ObjectModelSheetGenerator omsGenerator = new ObjectModelSheetGenerator(wb.getSheetAt(objectModelSheet));
             omsGenerator.generate();
 

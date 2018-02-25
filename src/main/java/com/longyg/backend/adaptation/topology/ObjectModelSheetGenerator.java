@@ -15,7 +15,7 @@ import java.util.List;
 public class ObjectModelSheetGenerator {
     private HSSFSheet objectModelSheet;
     private TopologyRepository topologyRepository = TopologyRepository.getInstance();
-    private int startRow = TemplateRepository.getObjectModelTplDef().getStartRow();
+    private int startRow = TemplateRepository.getOmTplDef().getStartRow();
     private int row = startRow;
 
     public ObjectModelSheetGenerator(HSSFSheet objectModelSheet) {

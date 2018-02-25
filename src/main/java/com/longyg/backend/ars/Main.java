@@ -29,9 +29,9 @@ public class Main {
         ExcelTemplateParser xlsTplParser = new ExcelTemplateParser();
         ExcelTemplate template = xlsTplParser.parse(xlsTplPath, tplDef);
 
-        TemplateRepository.setTplDef(tplDef);
+        TemplateRepository.setUsTplDef(tplDef);
         TemplateRepository.setTemplate(template);
-        TemplateRepository.setObjectModelTplDef(objectModelTplDef);
+        TemplateRepository.setOmTplDef(objectModelTplDef);
 
         prepareAdaptation();
         readVariableInput();

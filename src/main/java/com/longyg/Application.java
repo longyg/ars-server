@@ -14,9 +14,6 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 @ComponentScan
 public class Application {
-    private static final String xlsTplPath = "template.xls";
-    private static final String userStoryTplDefPath = "userstory.template.xml";
-    private static final String objectModelTplDefPath = "objectmodel.template.xml";
 
     public static void main(String[] args) throws Exception {
         SpringApplication.run(Application.class, args);
@@ -25,17 +22,6 @@ public class Application {
     }
 
     private static void init() throws Exception {
-        TemplateDefParser tplDefParser = new TemplateDefParser();
-        TemplateDefinition tplDef = tplDefParser.parse(userStoryTplDefPath);
-
-        ObjectModelTplDefParser objectModelTplDefParser = new ObjectModelTplDefParser();
-        ObjectModelTplDef objectModelTplDef = objectModelTplDefParser.parse(objectModelTplDefPath);
-
-        ExcelTemplateParser xlsTplParser = new ExcelTemplateParser();
-        ExcelTemplate template = xlsTplParser.parse(xlsTplPath, tplDef);
-
-        TemplateRepository.setTplDef(tplDef);
-        TemplateRepository.setTemplate(template);
-        TemplateRepository.setObjectModelTplDef(objectModelTplDef);
+        TemplateRepository.init();
     }
 }

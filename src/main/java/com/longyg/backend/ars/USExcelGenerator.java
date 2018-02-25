@@ -13,7 +13,7 @@ import org.apache.poi.ss.usermodel.CellType;
 
 public class USExcelGenerator {
     private HSSFSheet usSheet;
-    private TemplateDefinition tplDef = TemplateRepository.getTplDef();
+    private TemplateDefinition tplDef = TemplateRepository.getUsTplDef();
     private ExcelTemplate template = TemplateRepository.getTemplate();
 
     public USExcelGenerator(HSSFSheet usSheet) {

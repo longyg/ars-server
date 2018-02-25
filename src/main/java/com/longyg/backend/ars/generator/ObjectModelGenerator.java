@@ -76,7 +76,7 @@ public class ObjectModelGenerator {
         List<PmbObject> primaryObjects = pmbObjectRepository.getAllReleaseObjects().get(adaptationIds.get(0));
 
         int i = 0;
-        IntHolder row = new IntHolder(TemplateRepository.getObjectModelTplDef().getStartRow());
+        IntHolder row = new IntHolder(TemplateRepository.getOmTplDef().getStartRow());
         for (String adaptationId : adaptationIds) {
             LOG.info("=====> Adaptation ID: " + adaptationId);
             if (!pmbObjectRepository.getAllReleaseObjects().containsKey(adaptationId)) {

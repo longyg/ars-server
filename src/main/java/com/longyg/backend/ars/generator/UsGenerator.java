@@ -73,7 +73,7 @@ public class UsGenerator {
         TitleTemplate titleTemplate = TemplateRepository.getTemplate().getUsExcelTemplate().getBasicTemplate().getTitleTemplate();
         Title title = new Title();
         title.setValue(getValueFromTpl(titleTemplate.getTpl()));
-        title.setRow(TemplateRepository.getTplDef().getBasic().getTitle().getRow());
+        title.setRow(TemplateRepository.getUsTplDef().getBasic().getTitle().getRow());
         title.setCol(Constants.TITLE_COL);
         return title;
     }
@@ -85,7 +85,7 @@ public class UsGenerator {
             AdapInfo adapInfo = new AdapInfo();
             adapInfo.setName(adapInfoTemplate.getPresentation());
             adapInfo.setValue(getValueFromTpl(adapInfoTemplate.getTpl()));
-            Info info = TemplateRepository.getTplDef().getBasic().getInfoByName(adapInfoTemplate.getName());
+            Info info = TemplateRepository.getUsTplDef().getBasic().getInfoByName(adapInfoTemplate.getName());
             adapInfo.setRow(info.getRow());
             adapInfo.setCol(Constants.ADAP_INFO_VALUE_COL);
 
@@ -101,7 +101,7 @@ public class UsGenerator {
         for (UserStoryTemplate userStoryTemplate : TemplateRepository.getTemplate().getUsExcelTemplate().getUserStoryTemplateList()) {
             UserStory userStory = new UserStory();
 
-            US us = TemplateRepository.getTplDef().getUsByName(userStoryTemplate.getName());
+            US us = TemplateRepository.getUsTplDef().getUsByName(userStoryTemplate.getName());
 
             userStory.setValue(getValueFromTpl(userStoryTemplate.getTpl()));
             userStory.setRow(us.getRow());

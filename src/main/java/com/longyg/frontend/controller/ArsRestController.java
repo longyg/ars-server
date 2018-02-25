@@ -1,5 +1,6 @@
 package com.longyg.frontend.controller;
 
+import com.longyg.backend.ars.export.ArsExporter;
 import com.longyg.backend.ars.generator.ArsCreator;
 import com.longyg.frontend.model.ars.ARS;
 import com.longyg.frontend.model.ars.alarm.AlarmSpec;
@@ -28,6 +29,9 @@ public class ArsRestController {
     @Autowired
     private ArsCreator arsCreator;
 
+    @Autowired
+    private ArsExporter arsExporter;
+
     @GetMapping("/api/ars")
     public List<ARS> getAllArs() {
         return arsService.findAllArses();
@@ -46,6 +50,7 @@ public class ArsRestController {
         }
         try {
             ARS savedArs = arsCreator.generateAndSave(ars);
+            arsExporter.export(ars);
             return new ResponseEntity<>(savedArs, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
