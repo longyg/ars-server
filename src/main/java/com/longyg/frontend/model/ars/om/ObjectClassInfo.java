@@ -20,6 +20,7 @@ public class ObjectClassInfo implements Comparable {
     private boolean hasGuiLuanch;
     private String tgppObject;
     private String intVersion;
+    private String intNasda; // agent or interface
     private ClassType classType;
     private int min;
     private int max;
@@ -148,6 +149,14 @@ public class ObjectClassInfo implements Comparable {
 
     public void setIntVersion(String intVersion) {
         this.intVersion = intVersion;
+    }
+
+    public String getIntNasda() {
+        return intNasda;
+    }
+
+    public void setIntNasda(String intNasda) {
+        this.intNasda = intNasda;
     }
 
     public ClassType getClassType() {

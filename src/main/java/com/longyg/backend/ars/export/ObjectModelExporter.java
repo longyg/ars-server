@@ -47,18 +47,37 @@ public class ObjectModelExporter extends Exporter {
 
     private void setObjectName(HSSFRow row, ObjectClassInfo oci) {
         int colNo = oci.getColumn();
-        for (int i = 0; i < colNo - 1; i++) {
+        /**
+        for (int i = 0; i < colNo; i++) {
             setCellValue(row, i, "|");
         }
+         **/
         setCellValue(row, colNo,"|- " + oci.getName());
     }
 
     private void setObjectAttributes(HSSFRow row, ObjectClassInfo oci) {
+        setCellValue(row, 8, oci.isAlarmingObject() ? "A" : "");
         setCellValue(row, 9, oci.isMeasuredObject() ? "M" : "");
+        setCellValue(row, 10, oci.isCmObject() ? "x" : "");
+        setCellValue(row, 11, oci.isHasIcon() ? "x" : "");
+        setCellValue(row, 12, oci.isHasGuiLuanch() ? "x" : "");
+        setCellValue(row, 13, oci.getTgppObject());
+        setCellValue(row, 14, oci.getIntVersion());
+        setCellValue(row, 15, oci.getIntNasda());
+        setCellValue(row, 16, oci.getMin());
+        setCellValue(row, 17, oci.getMax());
+        setCellValue(row, 18, oci.getAvg());
+        setCellValue(row, 19, oci.getAvgPerNet());
+        setCellValue(row, 20, oci.getMaxPerNet());
+        setCellValue(row, 21, oci.getMaxPerNE());
+        setCellValue(row, 22, oci.getMaxNePerNet());
+        setCellValue(row, 23, oci.getAvgNePerNet());
+        setCellValue(row, 24, oci.isMocrNeeded() ? "x" : "");
         setCellValue(row, 25, oci.getSupportedReleases());
         setCellValue(row, 26, oci.isTransient() ? "Transient" : "MO");
         setCellValue(row, 27, oci.getPresentation());
         setCellValue(row, 28, oci.getNameInOmes());
+        setCellValue(row, 29, oci.getAdaptationId());
     }
 
     private void setCellValue(HSSFRow row, int cellNo, Object value) {
