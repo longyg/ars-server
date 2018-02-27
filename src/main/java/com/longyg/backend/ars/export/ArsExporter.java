@@ -47,7 +47,9 @@ public class ArsExporter {
             LOG.error("Exception while exporting ARS excel: ", e);
             throw new Exception("Exception while exporting ARS excel: ", e);
         } finally {
-            this.wb.close();
+            if (null != this.wb) {
+                this.wb.close();
+            }
         }
     }
 

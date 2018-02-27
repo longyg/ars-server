@@ -10,7 +10,7 @@ import com.longyg.backend.ars.tpl.definition.userstory.TemplateDefParser;
 import com.longyg.backend.ars.tpl.definition.userstory.TemplateDefinition;
 
 public class TemplateRepository {
-    private static final String XLS_TPL_PATH = "template.xls";
+    public static final String XLS_TPL_PATH = "template.xls";
     private static final String US_TPL_DEF_PATH = "userstory.template.xml";
     private static final String OM_TPL_DEF_PATH = "objectmodel.template.xml";
     private static final String PMDL_TPL_DEF_PATH = "pmdataload.template.xml";

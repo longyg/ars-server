@@ -11,6 +11,7 @@ import org.apache.poi.ss.usermodel.CellType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Component
@@ -34,8 +35,6 @@ public class PmDataLoadExporter extends Exporter {
         int sheetNo = TemplateRepository.getPmDlTplDef().getSheet();
         HSSFSheet sheet = this.wb.getSheetAt(sheetNo);
 
-        PmDataLoadSpec spec = arsService.findPmDL(this.ars.getPmDataLoad());
-
         int titleTplRowNo = TemplateRepository.getPmDlTplDef().getTitleRow();
         this.titleTplRow = sheet.getRow(titleTplRowNo);
 
@@ -44,22 +43,24 @@ public class PmDataLoadExporter extends Exporter {
 
         cleanSheet(sheet);
 
-//        int rowNo = 0;
-//        if (spec.getMeasurementMap().keySet().size() > 1) {
-//            for (String adaptationId : spec.getMeasurementMap().keySet()) {
-//                addAdaptationIdRow(rowNo, sheet, adaptationId);
-//                rowNo++;
-//                addTitleRow(rowNo, sheet);
-//                rowNo = addDataRows(rowNo, sheet, spec.getMeasurementMap().get(adaptationId));
-//                rowNo++;
-//            }
-//        } else if (spec.getMeasurementMap().keySet().size() == 1) {
-//            addTitleRow(rowNo, sheet);
-//            String adaptationId = spec.getMeasurementMap().keySet().iterator().next();
-//            addDataRows(rowNo, sheet, spec.getMeasurementMap().get(adaptationId));
-//        } else {
-//            LOG.error("Empty PM Data Load entries");
-//        }
+        PmDataLoadSpec spec = arsService.findPmDL(this.ars.getPmDataLoad());
+
+        int rowNo = 0;
+        if (spec.getMeasurementMap().keySet().size() > 1) {
+            for (String adaptationId : spec.getMeasurementMap().keySet()) {
+                addAdaptationIdRow(rowNo, sheet, adaptationId);
+                rowNo++;
+                addTitleRow(rowNo, sheet);
+                rowNo = addDataRows(rowNo, sheet, spec.getMeasurementMap().get(adaptationId));
+                rowNo++;
+            }
+        } else if (spec.getMeasurementMap().keySet().size() == 1) {
+            addTitleRow(rowNo, sheet);
+            String adaptationId = spec.getMeasurementMap().keySet().iterator().next();
+            addDataRows(rowNo, sheet, spec.getMeasurementMap().get(adaptationId));
+        } else {
+            LOG.error("Empty PM Data Load entries");
+        }
     }
 
     private void addTitleRow(int rowNo, HSSFSheet sheet) {
@@ -189,8 +190,8 @@ public class PmDataLoadExporter extends Exporter {
             cell.setCellValue((null == value) ? "" : (String) value);
         } else if (value instanceof Boolean) {
             cell.setCellValue((Boolean) value);
-        } else if (value instanceof Integer) {
-            cell.setCellValue((Integer) value);
+        } else if (value instanceof Integer || value instanceof Long || value instanceof Double || value instanceof BigDecimal) {
+            cell.setCellValue(Double.valueOf(value.toString()));
         } else {
             cell.setCellValue((null == value) ? "" : value.toString());
         }
@@ -200,6 +201,14 @@ public class PmDataLoadExporter extends Exporter {
         for (int i = 0; i <= sheet.getLastRowNum(); i++) {
             HSSFRow row = sheet.getRow(i);
             if (null != row) {
+                for (int j = row.getFirstCellNum(); j <= row.getLastCellNum(); j++) {
+                    HSSFCell cell = row.getCell(j);
+                    if (null != cell) {
+                        if (cell.getCellComment() != null) {
+                            cell.removeCellComment();
+                        }
+                    }
+                }
                 sheet.removeRow(row);
             }
         }
@@ -214,6 +223,14 @@ public class PmDataLoadExporter extends Exporter {
         if (null == cell) {
             cell = newRow.createCell(0);
         }
-        cell.setCellValue("Adaptation ID: " + adaptationId);
+
+//        HSSFCellStyle cellStyle = this.wb.createCellStyle();
+//        HSSFFont font = this.wb.createFont();
+//        font.setFontHeightInPoints((short) 18);
+//        cellStyle.setFont(font);
+//        cell.setCellStyle(cellStyle);
+
+        String adapId = adaptationId.replaceAll("_", ".");
+        cell.setCellValue("Adaptation ID: " + adapId);
     }
 }

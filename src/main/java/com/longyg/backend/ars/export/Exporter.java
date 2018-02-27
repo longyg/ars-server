@@ -12,7 +12,7 @@ public class Exporter {
         this.wb = wb;
     }
 
-    public void export(ARS ars, HSSFWorkbook wb) {
+    public void export(ARS ars, HSSFWorkbook wb) throws Exception {
         // do nothing
     }
 }

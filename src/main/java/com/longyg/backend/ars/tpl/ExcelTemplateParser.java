@@ -23,6 +23,8 @@ public class ExcelTemplateParser  {
         {
             LOG.error("Exception while parsing excel template", e);
             throw new Exception("Exception while parsing excel template", e);
+        } finally {
+            wb.close();
         }
 
         // User Story sheet
