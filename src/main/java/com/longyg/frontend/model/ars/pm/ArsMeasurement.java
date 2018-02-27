@@ -29,18 +29,30 @@ public class ArsMeasurement implements Comparable<ArsMeasurement> {
     private long minimalInterval = 1;
     private long storageDays = 14;
     private long bytesPerCounter = 4;
+    // 1 NE Measurements/h
     private long mphPerNE;
+    // 1 NE Counters/h
     private long cphPerNE;
+    // 1 NE hourly aggregation Counter/h
     private long chaPerNE;
+    // 1 NE daily aggregation Counter/day
     private long cdaPerNe;
+    // Max Measurements/h
     private long maxMph;
+    // Max Counters/h
     private long maxCph;
     private String measGroup;
+    // 1 NE Raw rows in DB
     private long dbRrPerNe;
+    // 1 NE Raw counters in DB
     private long dbRcPerNe;
+    // 1 NE Space that will use for one measurement (Raw Data)
     private long msPerNe;
+    // Max Raw rows in DB
     private long dbMaxRows;
+    // Max Raw counters in DB
     private long dbMaxCtrs;
+    // Max Space that will use for one measurement (Raw Data)
     private long maxMs;
     private long totalBytesPerInterval;
     private BigDecimal totalSizePerHour;
