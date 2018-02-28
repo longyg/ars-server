@@ -58,6 +58,7 @@ public class ArsExporter {
         initExporters();
     }
     private void initExporters() {
+        this.exporters.clear();
         this.exporters.add(omExporter);
         this.exporters.add(pmDlExporter);
     }

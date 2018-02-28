@@ -3,8 +3,10 @@ package com.longyg.backend.ars.tpl.definition.pmdataload;
 public class PmDataLoadTplDef {
     private int sheet;
     private String name;
+    private int adapIdRow;
     private int titleRow;
     private int dataRow;
+    private int cellColorRow;
 
     public int getSheet() {
         return sheet;
@@ -26,6 +28,14 @@ public class PmDataLoadTplDef {
         return titleRow;
     }
 
+    public int getAdapIdRow() {
+        return adapIdRow;
+    }
+
+    public void setAdapIdRow(int adapIdRow) {
+        this.adapIdRow = adapIdRow;
+    }
+
     public void setTitleRow(int titleRow) {
         this.titleRow = titleRow;
     }
@@ -36,5 +46,13 @@ public class PmDataLoadTplDef {
 
     public void setDataRow(int dataRow) {
         this.dataRow = dataRow;
+    }
+
+    public int getCellColorRow() {
+        return cellColorRow;
+    }
+
+    public void setCellColorRow(int cellColorRow) {
+        this.cellColorRow = cellColorRow;
     }
 }

@@ -34,12 +34,18 @@ public class PmDlTplDefParser {
                                 tplDef.setSheet(Integer.valueOf(attribute.getValue()));
                             }
                         }
+                    } else if (qName.equals("adaptationId")) {
+                        Iterator<Attribute> attributes = startElement.getAttributes();
+                        tplDef.setAdapIdRow(Integer.valueOf(attributes.next().getValue()));
                     } else if (qName.equals("title")) {
                         Iterator<Attribute> attributes = startElement.getAttributes();
                         tplDef.setTitleRow(Integer.valueOf(attributes.next().getValue()));
                     } else if (qName.equals("data")) {
                         Iterator<Attribute> attributes = startElement.getAttributes();
                         tplDef.setDataRow(Integer.valueOf(attributes.next().getValue()));
+                    } else if (qName.equals("cellColor")) {
+                        Iterator<Attribute> attributes = startElement.getAttributes();
+                        tplDef.setCellColorRow(Integer.valueOf(attributes.next().getValue()));
                     }
                     break;
             }

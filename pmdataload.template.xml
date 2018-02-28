@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <template sheet="6" name="PM Data Load">
-    <title rowNo="0"></title>
-    <data rowNo="1"></data>
+    <adaptationId rowNo="0"></adaptationId>
+    <title rowNo="1"></title>
+    <data rowNo="2"></data>
+    <cellColor rowNo="3"></cellColor>
 </template>

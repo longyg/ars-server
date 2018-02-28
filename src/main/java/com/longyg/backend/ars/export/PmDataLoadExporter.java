@@ -21,9 +21,10 @@ public class PmDataLoadExporter extends Exporter {
     @Autowired
     private ArsService arsService;
 
+    private HSSFRow adapIdTplRow;
     private HSSFRow titleTplRow;
-
     private HSSFRow dataTplRow;
+    private HSSFRow colorTplRow;
 
     public void export(ARS ars, HSSFWorkbook wb) {
         init(ars, wb);
@@ -35,11 +36,14 @@ public class PmDataLoadExporter extends Exporter {
         int sheetNo = TemplateRepository.getPmDlTplDef().getSheet();
         HSSFSheet sheet = this.wb.getSheetAt(sheetNo);
 
+        int adapIdTplRowNo = TemplateRepository.getPmDlTplDef().getAdapIdRow();
+        this.adapIdTplRow = sheet.getRow(adapIdTplRowNo);
         int titleTplRowNo = TemplateRepository.getPmDlTplDef().getTitleRow();
         this.titleTplRow = sheet.getRow(titleTplRowNo);
-
         int dataTplRowNo = TemplateRepository.getPmDlTplDef().getDataRow();
         this.dataTplRow = sheet.getRow(dataTplRowNo);
+        int colorTplRowNo = TemplateRepository.getPmDlTplDef().getCellColorRow();
+        this.colorTplRow = sheet.getRow(colorTplRowNo);
 
         cleanSheet(sheet);
 
@@ -128,69 +132,112 @@ public class PmDataLoadExporter extends Exporter {
                 newRow = sheet.createRow(rowNo);
             }
 
-            setCellValue(newRow, 0, meas.getName());
-            setCellValue(newRow, 1, meas.getNameInOmes());
-            setCellValue(newRow, 2, meas.getMeasuredObject());
-            setCellValue(newRow, 3, meas.isSupported() ? "Yes" : "No");
-            setCellValue(newRow, 4, meas.getSupportedOtherReleases());
-            setCellValue(newRow, 5, meas.getDimension());
-            setCellValue(newRow, 6, "");
-            setCellValue(newRow, 7, "");
-            setCellValue(newRow, 8, meas.getAvgPerNet());
-            setCellValue(newRow, 9, meas.getMaxPerNet());
-            setCellValue(newRow, 10, meas.getMaxPerNe());
-            setCellValue(newRow, 11, meas.getCounterNumber());
-            setCellValue(newRow, 12, meas.getCounterNumberOfLastVersion());
-            setCellValue(newRow, 13, meas.getDelta());
-            setCellValue(newRow, 14, meas.getAggObject());
-            setCellValue(newRow, 15, meas.getTimeAgg());
-            setCellValue(newRow, 16, meas.getBh());
-            setCellValue(newRow, 17, meas.getActive());
-            setCellValue(newRow, 18, meas.getDefaultInterval());
-            setCellValue(newRow, 19, meas.getMinimalInterval());
-            setCellValue(newRow, 20, meas.getStorageDays());
-            setCellValue(newRow, 21, meas.getBytesPerCounter());
-            setCellValue(newRow, 22, meas.getMphPerNE());
-            setCellValue(newRow, 23, meas.getCphPerNE());
-            setCellValue(newRow, 24, "");
-            setCellValue(newRow, 25, meas.getChaPerNE());
-            setCellValue(newRow, 26, meas.getCdaPerNe());
-            setCellValue(newRow, 27, "");
-            setCellValue(newRow, 28, meas.getMaxMph());
-            setCellValue(newRow, 29, meas.getMaxCph());
-            setCellValue(newRow, 30, meas.getMeasGroup());
-            setCellValue(newRow, 31, meas.getDbRrPerNe());
-            setCellValue(newRow, 32, meas.getDbRcPerNe());
-            setCellValue(newRow, 33, meas.getMsPerNe());
-            setCellValue(newRow, 34, meas.getDbMaxRows());
-            setCellValue(newRow, 35, meas.getDbMaxCtrs());
-            setCellValue(newRow, 36, meas.getMaxMs());
-            setCellValue(newRow, 37, meas.getTotalBytesPerInterval());
-            setCellValue(newRow, 38, meas.getTotalSizePerHour());
-            setCellValue(newRow, 39, meas.getTableSizePerDay());
+            if (meas.getTotalSizePerHour().doubleValue() > 2) {
+                HSSFCellStyle cellStyle = colorTplRow.getCell(1).getCellStyle();
+                CellType cellType = colorTplRow.getCell(1).getCellTypeEnum();
+                setCell(newRow, 0, meas.getName(), cellStyle, cellType);
+            } else if (meas.getTableSizePerDay().doubleValue() > 2) {
+                HSSFCellStyle cellStyle = colorTplRow.getCell(0).getCellStyle();
+                CellType cellType = colorTplRow.getCell(0).getCellTypeEnum();
+                setCell(newRow, 0, meas.getName(), cellStyle, cellType);
+            } else {
+                setCell(newRow, 0, meas.getName());
+            }
 
+            setCell(newRow, 1, meas.getNameInOmes());
+            setCell(newRow, 2, meas.getMeasuredObject());
+            setCell(newRow, 3, meas.isSupported() ? "Yes" : "No");
+            setCell(newRow, 4, meas.getSupportedOtherReleases());
+            setCell(newRow, 5, meas.getDimension());
+            setCell(newRow, 6, "");
+            setCell(newRow, 7, "");
+            setCell(newRow, 8, meas.getAvgPerNet());
+            setCell(newRow, 9, meas.getMaxPerNet());
+            setCell(newRow, 10, meas.getMaxPerNe());
+            setCell(newRow, 11, meas.getCounterNumber());
+            setCell(newRow, 12, meas.getCounterNumberOfLastVersion());
+            setCell(newRow, 13, meas.getDelta());
+            setCell(newRow, 14, meas.getAggObject());
+            setCell(newRow, 15, meas.getTimeAgg());
+            setCell(newRow, 16, meas.getBh());
+            setCell(newRow, 17, meas.getActive());
+            setCell(newRow, 18, meas.getDefaultInterval());
+            setCell(newRow, 19, meas.getMinimalInterval());
+            setCell(newRow, 20, meas.getStorageDays());
+            setCell(newRow, 21, meas.getBytesPerCounter());
+            setCell(newRow, 22, meas.getMphPerNE());
+            setCell(newRow, 23, meas.getCphPerNE());
+            setCell(newRow, 24, "");
+            setCell(newRow, 25, meas.getChaPerNE());
+            setCell(newRow, 26, meas.getCdaPerNe());
+            setCell(newRow, 27, "");
+            setCell(newRow, 28, meas.getMaxMph());
+            setCell(newRow, 29, meas.getMaxCph());
+            setCell(newRow, 30, meas.getMeasGroup());
+            setCell(newRow, 31, meas.getDbRrPerNe());
+            setCell(newRow, 32, meas.getDbRcPerNe());
+            setCell(newRow, 33, meas.getMsPerNe());
+            setCell(newRow, 34, meas.getDbMaxRows());
+            setCell(newRow, 35, meas.getDbMaxCtrs());
+            setCell(newRow, 36, meas.getMaxMs());
+            setCell(newRow, 37, meas.getTotalBytesPerInterval());
+
+            HSSFCellStyle greenStyle = colorTplRow.getCell(2).getCellStyle();
+            CellType greenType = colorTplRow.getCell(2).getCellTypeEnum();
+            HSSFCellStyle redStyle = colorTplRow.getCell(3).getCellStyle();
+            CellType redType = colorTplRow.getCell(3).getCellTypeEnum();
+
+            if (meas.getTotalSizePerHour().doubleValue() > 2) {
+                setCell(newRow, 38, meas.getTotalSizePerHour(), redStyle, redType);
+            } else {
+                setCell(newRow, 38, meas.getTotalSizePerHour(), greenStyle, greenType);
+            }
+
+            if (meas.getTableSizePerDay().doubleValue() > 2) {
+                setCell(newRow, 39, meas.getTableSizePerDay(), redStyle, redType);
+            } else {
+                setCell(newRow, 39, meas.getTableSizePerDay(), greenStyle, greenType);
+            }
             rowNo++;
         }
         return rowNo;
     }
 
-    private void setCellValue(HSSFRow row, int cellNo, Object value) {
+    private void setCell(HSSFRow row, int cellNo, Object value, HSSFCellStyle cellStyle, CellType cellType) {
         HSSFCell cell = row.getCell(cellNo);
         if (null == cell) {
             cell = row.createCell(cellNo);
-
-            HSSFCellStyle cellStyle = dataTplRow.getCell(cellNo).getCellStyle();
-            CellType cellType = dataTplRow.getCell(cellNo).getCellTypeEnum();
-
-            cell.setCellStyle(cellStyle);
-            cell.setCellType(cellType);
-
         }
+        cell.setCellStyle(cellStyle);
+        cell.setCellType(cellType);
+
+        setCellValue(cell, value);
+    }
+
+    private void setCell(HSSFRow row, int cellNo, Object value) {
+        HSSFCell cell = row.getCell(cellNo);
+        if (null == cell) {
+            cell = row.createCell(cellNo);
+        }
+
+        HSSFCellStyle cellStyle = dataTplRow.getCell(cellNo).getCellStyle();
+        CellType cellType = dataTplRow.getCell(cellNo).getCellTypeEnum();
+
+        cell.setCellStyle(cellStyle);
+        cell.setCellType(cellType);
+
+        setCellValue(cell, value);
+    }
+
+    private void setCellValue(HSSFCell cell, Object value) {
         if (value instanceof String) {
             cell.setCellValue((null == value) ? "" : (String) value);
         } else if (value instanceof Boolean) {
             cell.setCellValue((Boolean) value);
-        } else if (value instanceof Integer || value instanceof Long || value instanceof Double || value instanceof BigDecimal) {
+        } else if (value instanceof Integer
+                || value instanceof Long
+                || value instanceof Double
+                || value instanceof BigDecimal) {
             cell.setCellValue(Double.valueOf(value.toString()));
         } else {
             cell.setCellValue((null == value) ? "" : value.toString());
@@ -224,11 +271,11 @@ public class PmDataLoadExporter extends Exporter {
             cell = newRow.createCell(0);
         }
 
-//        HSSFCellStyle cellStyle = this.wb.createCellStyle();
-//        HSSFFont font = this.wb.createFont();
-//        font.setFontHeightInPoints((short) 18);
-//        cellStyle.setFont(font);
-//        cell.setCellStyle(cellStyle);
+        HSSFCellStyle cellStyle = adapIdTplRow.getCell(0).getCellStyle();
+        CellType cellType = adapIdTplRow.getCell(0).getCellTypeEnum();
+
+        cell.setCellStyle(cellStyle);
+        cell.setCellType(cellType);
 
         String adapId = adaptationId.replaceAll("_", ".");
         cell.setCellValue("Adaptation ID: " + adapId);
