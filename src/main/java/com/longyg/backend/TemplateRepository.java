@@ -2,6 +2,10 @@ package com.longyg.backend;
 
 import com.longyg.backend.ars.tpl.ExcelTemplate;
 import com.longyg.backend.ars.tpl.ExcelTemplateParser;
+import com.longyg.backend.ars.tpl.definition.alarms.AlarmsTplDef;
+import com.longyg.backend.ars.tpl.definition.alarms.AlarmsTplDefParser;
+import com.longyg.backend.ars.tpl.definition.counters.CountersTplDef;
+import com.longyg.backend.ars.tpl.definition.counters.CountersTplDefParser;
 import com.longyg.backend.ars.tpl.definition.objectmodel.ObjectModelTplDef;
 import com.longyg.backend.ars.tpl.definition.objectmodel.ObjectModelTplDefParser;
 import com.longyg.backend.ars.tpl.definition.pmdataload.PmDataLoadTplDef;
@@ -14,10 +18,14 @@ public class TemplateRepository {
     private static final String US_TPL_DEF_PATH = "userstory.template.xml";
     private static final String OM_TPL_DEF_PATH = "objectmodel.template.xml";
     private static final String PMDL_TPL_DEF_PATH = "pmdataload.template.xml";
+    private static final String CTR_TPL_DEF_PATH = "counters.template.xml";
+    private static final String ALARM_TPL_DEF_PATH = "alarms.template.xml";
 
     private static TemplateDefinition usTplDef;
     private static ObjectModelTplDef omTplDef;
     private static PmDataLoadTplDef pmDlTplDef;
+    private static CountersTplDef ctrTplDef;
+    private static AlarmsTplDef alarmsTplDef;
     private static ExcelTemplate template;
 
     private static boolean initialized = false;
@@ -35,6 +43,12 @@ public class TemplateRepository {
         PmDlTplDefParser pmDlTplDefParser = new PmDlTplDefParser();
         PmDataLoadTplDef pmDlTplDef = pmDlTplDefParser.parse(PMDL_TPL_DEF_PATH);
 
+        CountersTplDefParser ctrTplDefParser = new CountersTplDefParser();
+        CountersTplDef ctrTplDef = ctrTplDefParser.parse(CTR_TPL_DEF_PATH);
+
+        AlarmsTplDefParser alarmsTplDefParser = new AlarmsTplDefParser();
+        AlarmsTplDef alarmsTplDef = alarmsTplDefParser.parse(ALARM_TPL_DEF_PATH);
+
         ExcelTemplateParser xlsTplParser = new ExcelTemplateParser();
         ExcelTemplate template = xlsTplParser.parse(XLS_TPL_PATH, usTplDef);
 
@@ -42,6 +56,8 @@ public class TemplateRepository {
         TemplateRepository.usTplDef = usTplDef;
         TemplateRepository.omTplDef = omTplDef;
         TemplateRepository.pmDlTplDef = pmDlTplDef;
+        TemplateRepository.ctrTplDef = ctrTplDef;
+        TemplateRepository.alarmsTplDef = alarmsTplDef;
 
         initialized = true;
     }
@@ -73,4 +89,12 @@ public class TemplateRepository {
     public static PmDataLoadTplDef getPmDlTplDef() { return pmDlTplDef; }
 
     public static void setPmDlTplDef(PmDataLoadTplDef pmDlTplDef) { TemplateRepository.pmDlTplDef = pmDlTplDef; }
+
+    public static CountersTplDef getCtrTplDef() { return ctrTplDef; }
+
+    public static void setCtrTplDef(CountersTplDef ctrTplDef) { TemplateRepository.ctrTplDef = ctrTplDef; }
+
+    public static AlarmsTplDef getAlarmsTplDef() { return alarmsTplDef; }
+
+    public static void setAlarmsTplDef(AlarmsTplDef alarmsTplDef) { TemplateRepository.alarmsTplDef = alarmsTplDef; }
 }

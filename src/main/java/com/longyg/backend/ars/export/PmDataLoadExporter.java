@@ -45,7 +45,7 @@ public class PmDataLoadExporter extends Exporter {
         int colorTplRowNo = TemplateRepository.getPmDlTplDef().getCellColorRow();
         this.colorTplRow = sheet.getRow(colorTplRowNo);
 
-        cleanSheet(sheet);
+        ExportUtils.cleanSheet(sheet);
 
         PmDataLoadSpec spec = arsService.findPmDL(this.ars.getPmDataLoad());
 
@@ -241,23 +241,6 @@ public class PmDataLoadExporter extends Exporter {
             cell.setCellValue(Double.valueOf(value.toString()));
         } else {
             cell.setCellValue((null == value) ? "" : value.toString());
-        }
-    }
-
-    private void cleanSheet(HSSFSheet sheet) {
-        for (int i = 0; i <= sheet.getLastRowNum(); i++) {
-            HSSFRow row = sheet.getRow(i);
-            if (null != row) {
-                for (int j = row.getFirstCellNum(); j <= row.getLastCellNum(); j++) {
-                    HSSFCell cell = row.getCell(j);
-                    if (null != cell) {
-                        if (cell.getCellComment() != null) {
-                            cell.removeCellComment();
-                        }
-                    }
-                }
-                sheet.removeRow(row);
-            }
         }
     }
 
