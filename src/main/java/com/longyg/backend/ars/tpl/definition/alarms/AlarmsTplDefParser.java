@@ -36,6 +36,9 @@ public class AlarmsTplDefParser {
                                 tplDef.setSheet(Integer.valueOf(attribute.getValue()));
                             }
                         }
+                    } else if (qName.equals("adaptationId")) {
+                        Iterator<Attribute> attributes = startElement.getAttributes();
+                        tplDef.setAdapIdRow(Integer.valueOf(attributes.next().getValue()));
                     } else if (qName.equals("title")) {
                         Iterator<Attribute> attributes = startElement.getAttributes();
                         tplDef.setTitleRow(Integer.valueOf(attributes.next().getValue()));

@@ -29,6 +29,12 @@ public class ArsExporter {
     @Autowired
     private PmDataLoadExporter pmDlExporter;
 
+    @Autowired
+    private CountersExporter countersExporter;
+
+    @Autowired
+    private AlarmsExporter alarmsExporter;
+
     private List<Exporter> exporters = new ArrayList<>();
 
     public void export(ARS ars) throws Exception {
@@ -61,6 +67,8 @@ public class ArsExporter {
         this.exporters.clear();
         this.exporters.add(omExporter);
         this.exporters.add(pmDlExporter);
+        this.exporters.add(countersExporter);
+        this.exporters.add(alarmsExporter);
     }
 
     private String getOutExcelFilePath() throws Exception {
@@ -78,7 +86,7 @@ public class ArsExporter {
     }
 
     private void initWorkbook() throws Exception {
-        try (FileInputStream fi = new FileInputStream(XLS_TPL_PATH);) {
+        try (FileInputStream fi = new FileInputStream(XLS_TPL_PATH)) {
             this.wb = new HSSFWorkbook(fi);
         } catch (Exception e) {
             LOG.error("Exception while initializing workbook via template", e);

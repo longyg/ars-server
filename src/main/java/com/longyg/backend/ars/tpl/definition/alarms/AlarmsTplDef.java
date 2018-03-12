@@ -3,6 +3,7 @@ package com.longyg.backend.ars.tpl.definition.alarms;
 public class AlarmsTplDef {
     private int sheet;
     private String name;
+    private int adapIdRow;
     private int titleRow;
     private int dataRow;
 
@@ -20,6 +21,14 @@ public class AlarmsTplDef {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int getAdapIdRow() {
+        return adapIdRow;
+    }
+
+    public void setAdapIdRow(int adapIdRow) {
+        this.adapIdRow = adapIdRow;
     }
 
     public int getTitleRow() {

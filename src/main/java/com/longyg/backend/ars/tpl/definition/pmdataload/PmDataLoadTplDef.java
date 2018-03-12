@@ -7,6 +7,8 @@ public class PmDataLoadTplDef {
     private int titleRow;
     private int dataRow;
     private int cellColorRow;
+    private int statisticRow;
+    private int pmfileRow;
 
     public int getSheet() {
         return sheet;
@@ -54,5 +56,21 @@ public class PmDataLoadTplDef {
 
     public void setCellColorRow(int cellColorRow) {
         this.cellColorRow = cellColorRow;
+    }
+
+    public int getStatisticRow() {
+        return statisticRow;
+    }
+
+    public void setStatisticRow(int statisticRow) {
+        this.statisticRow = statisticRow;
+    }
+
+    public int getPmfileRow() {
+        return pmfileRow;
+    }
+
+    public void setPmfileRow(int pmfileRow) {
+        this.pmfileRow = pmfileRow;
     }
 }

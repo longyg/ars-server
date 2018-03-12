@@ -11,18 +11,25 @@ public class ArsAlarm implements Comparable<ArsAlarm> {
     private List<String> supportedPreviousVersions = new ArrayList<>();
     private String supportedOtherReleases;
     private String alarmText;
+    private String lastAlarmText;
     private boolean isAlarmTextChanged;
     private String probableCause;
+    private String lastProbableCause;
     private boolean isProbableCauseChanged;
     private String perceivedSeverityInfo;
+    private String lastPerceivedSeverityInfo;
     private boolean isSeverityChanged;
     private String alarmType;
+    private String lastAlarmType;
     private boolean isAlarmTypeChanged;
     private String meaning;
+    private String lastMeaning;
     private boolean isMeaningChanged;
     private String instructions;
+    private String lastInstructions;
     private boolean isInstructionsChanged;
     private String cancelling;
+    private String lastCancelling;
     private boolean isCancellingChanged;
 
     public String getSpecificProblem() {
@@ -62,6 +69,62 @@ public class ArsAlarm implements Comparable<ArsAlarm> {
 
     public void setSupportedOtherReleases(String supportedOtherReleases) {
         this.supportedOtherReleases = supportedOtherReleases;
+    }
+
+    public String getLastAlarmText() {
+        return lastAlarmText;
+    }
+
+    public void setLastAlarmText(String lastAlarmText) {
+        this.lastAlarmText = lastAlarmText;
+    }
+
+    public String getLastProbableCause() {
+        return lastProbableCause;
+    }
+
+    public void setLastProbableCause(String lastProbableCause) {
+        this.lastProbableCause = lastProbableCause;
+    }
+
+    public String getLastPerceivedSeverityInfo() {
+        return lastPerceivedSeverityInfo;
+    }
+
+    public void setLastPerceivedSeverityInfo(String lastPerceivedSeverityInfo) {
+        this.lastPerceivedSeverityInfo = lastPerceivedSeverityInfo;
+    }
+
+    public String getLastAlarmType() {
+        return lastAlarmType;
+    }
+
+    public void setLastAlarmType(String lastAlarmType) {
+        this.lastAlarmType = lastAlarmType;
+    }
+
+    public String getLastMeaning() {
+        return lastMeaning;
+    }
+
+    public void setLastMeaning(String lastMeaning) {
+        this.lastMeaning = lastMeaning;
+    }
+
+    public String getLastInstructions() {
+        return lastInstructions;
+    }
+
+    public void setLastInstructions(String lastInstructions) {
+        this.lastInstructions = lastInstructions;
+    }
+
+    public String getLastCancelling() {
+        return lastCancelling;
+    }
+
+    public void setLastCancelling(String lastCancelling) {
+        this.lastCancelling = lastCancelling;
     }
 
     public String getAlarmText() {

@@ -1,6 +1,7 @@
 package com.longyg.backend.ars.export;
 
 import com.longyg.backend.TemplateRepository;
+import com.longyg.backend.ars.tpl.definition.pmdataload.PmDataLoadTplDef;
 import com.longyg.frontend.model.ars.ARS;
 import com.longyg.frontend.model.ars.pm.ArsMeasurement;
 import com.longyg.frontend.model.ars.pm.PmDataLoadSpec;
@@ -25,6 +26,11 @@ public class PmDataLoadExporter extends Exporter {
     private HSSFRow titleTplRow;
     private HSSFRow dataTplRow;
     private HSSFRow colorTplRow;
+    private HSSFRow statisticTotalTplRow;
+    private HSSFRow statisticTitleTplRow;
+    private HSSFRow statisticDataTplRow;
+    private HSSFRow pmfileTitleTplRow;
+    private HSSFRow pmfileDataTplRow;
 
     public void export(ARS ars, HSSFWorkbook wb) {
         init(ars, wb);
@@ -36,96 +42,56 @@ public class PmDataLoadExporter extends Exporter {
         int sheetNo = TemplateRepository.getPmDlTplDef().getSheet();
         HSSFSheet sheet = this.wb.getSheetAt(sheetNo);
 
-        int adapIdTplRowNo = TemplateRepository.getPmDlTplDef().getAdapIdRow();
-        this.adapIdTplRow = sheet.getRow(adapIdTplRowNo);
-        int titleTplRowNo = TemplateRepository.getPmDlTplDef().getTitleRow();
-        this.titleTplRow = sheet.getRow(titleTplRowNo);
-        int dataTplRowNo = TemplateRepository.getPmDlTplDef().getDataRow();
-        this.dataTplRow = sheet.getRow(dataTplRowNo);
-        int colorTplRowNo = TemplateRepository.getPmDlTplDef().getCellColorRow();
-        this.colorTplRow = sheet.getRow(colorTplRowNo);
+        PmDataLoadTplDef tplDef = TemplateRepository.getPmDlTplDef();
+        this.adapIdTplRow = sheet.getRow(tplDef.getAdapIdRow());
+        this.titleTplRow = sheet.getRow(tplDef.getTitleRow());
+        this.dataTplRow = sheet.getRow(tplDef.getDataRow());
+        this.colorTplRow = sheet.getRow(tplDef.getCellColorRow());
+        this.statisticTotalTplRow = sheet.getRow(tplDef.getStatisticRow());
+        this.statisticTitleTplRow = sheet.getRow(tplDef.getStatisticRow() + 1);
+        this.statisticDataTplRow = sheet.getRow(tplDef.getStatisticRow() + 2);
+        this.pmfileTitleTplRow = sheet.getRow(tplDef.getPmfileRow());
+        this.pmfileDataTplRow = sheet.getRow(tplDef.getPmfileRow() + 1);
 
         ExportUtils.cleanSheet(sheet);
 
         PmDataLoadSpec spec = arsService.findPmDL(this.ars.getPmDataLoad());
 
+        generateXlsContent(sheet, spec);
+    }
+
+    private int generateXlsContent(HSSFSheet sheet, PmDataLoadSpec spec) {
         int rowNo = 0;
+        rowNo = generateMeasurements(sheet, spec, rowNo);
+        rowNo = rowNo + 1;
+        rowNo = generateStatistics(sheet, spec, rowNo);
+        rowNo = rowNo + 2;
+        rowNo = generatePmFilesInfo(sheet, spec, rowNo);
+        return rowNo;
+    }
+
+    private int generateMeasurements(HSSFSheet sheet, PmDataLoadSpec spec, int startRowNo) {
+        int rowNo = startRowNo;
         if (spec.getMeasurementMap().keySet().size() > 1) {
             for (String adaptationId : spec.getMeasurementMap().keySet()) {
-                addAdaptationIdRow(rowNo, sheet, adaptationId);
+                ExportUtils.addAdaptationIdRow(rowNo, sheet, adaptationId, adapIdTplRow);
                 rowNo++;
-                addTitleRow(rowNo, sheet);
+                ExportUtils.addTitleRow(rowNo, sheet, titleTplRow);
                 rowNo = addDataRows(rowNo, sheet, spec.getMeasurementMap().get(adaptationId));
                 rowNo++;
             }
         } else if (spec.getMeasurementMap().keySet().size() == 1) {
-            addTitleRow(rowNo, sheet);
+            ExportUtils.addTitleRow(rowNo, sheet, titleTplRow);
             String adaptationId = spec.getMeasurementMap().keySet().iterator().next();
-            addDataRows(rowNo, sheet, spec.getMeasurementMap().get(adaptationId));
+            rowNo = addDataRows(rowNo, sheet, spec.getMeasurementMap().get(adaptationId));
         } else {
             LOG.error("Empty PM Data Load entries");
         }
+        return rowNo;
     }
 
-    private void addTitleRow(int rowNo, HSSFSheet sheet) {
-        HSSFRow newRow = sheet.getRow(rowNo);
-        if (null == newRow) {
-            newRow = sheet.createRow(rowNo);
-        }
-
-        for (int i = 0; i < titleTplRow.getLastCellNum(); i++) {
-            // Grab a copy of the old/new cell
-            HSSFCell oldCell = titleTplRow.getCell(i);
-            HSSFCell newCell = newRow.createCell(i);
-
-            // If the old cell is null jump to next cell
-            if (oldCell == null) {
-                newCell = null;
-                continue;
-            }
-
-            // Copy style from old cell and apply to new cell
-            newCell.setCellStyle(oldCell.getCellStyle());
-
-            // If there is a cell comment, copy
-            if (oldCell.getCellComment() != null) {
-                newCell.setCellComment(oldCell.getCellComment());
-            }
-
-            // If there is a cell hyperlink, copy
-            if (oldCell.getHyperlink() != null) {
-                newCell.setHyperlink(oldCell.getHyperlink());
-            }
-
-            // Set the cell data type
-            newCell.setCellType(oldCell.getCellTypeEnum());
-
-            // Set the cell data value
-            switch (oldCell.getCellTypeEnum()) {
-                case BLANK:
-                    newCell.setCellValue(oldCell.getStringCellValue());
-                    break;
-                case BOOLEAN:
-                    newCell.setCellValue(oldCell.getBooleanCellValue());
-                    break;
-                case ERROR:
-                    newCell.setCellErrorValue(oldCell.getErrorCellValue());
-                    break;
-                case FORMULA:
-                    newCell.setCellFormula(oldCell.getCellFormula());
-                    break;
-                case NUMERIC:
-                    newCell.setCellValue(oldCell.getNumericCellValue());
-                    break;
-                case STRING:
-                    newCell.setCellValue(oldCell.getRichStringCellValue());
-                    break;
-            }
-        }
-    }
-
-    private int addDataRows(int initRowNo, HSSFSheet sheet, List<ArsMeasurement> dataList) {
-        int rowNo = initRowNo + 1;
+    private int addDataRows(int startRowNo, HSSFSheet sheet, List<ArsMeasurement> dataList) {
+        int rowNo = startRowNo + 1;
         for (ArsMeasurement meas : dataList) {
             HSSFRow newRow = sheet.getRow(rowNo);
             if (null == newRow) {
@@ -135,11 +101,11 @@ public class PmDataLoadExporter extends Exporter {
             if (meas.getTotalSizePerHour().doubleValue() > 2) {
                 HSSFCellStyle cellStyle = colorTplRow.getCell(1).getCellStyle();
                 CellType cellType = colorTplRow.getCell(1).getCellTypeEnum();
-                setCell(newRow, 0, meas.getName(), cellStyle, cellType);
+                ExportUtils.setCell(newRow, 0, meas.getName(), cellStyle, cellType);
             } else if (meas.getTableSizePerDay().doubleValue() > 2) {
                 HSSFCellStyle cellStyle = colorTplRow.getCell(0).getCellStyle();
                 CellType cellType = colorTplRow.getCell(0).getCellTypeEnum();
-                setCell(newRow, 0, meas.getName(), cellStyle, cellType);
+                ExportUtils.setCell(newRow, 0, meas.getName(), cellStyle, cellType);
             } else {
                 setCell(newRow, 0, meas.getName());
             }
@@ -188,79 +154,205 @@ public class PmDataLoadExporter extends Exporter {
             CellType redType = colorTplRow.getCell(3).getCellTypeEnum();
 
             if (meas.getTotalSizePerHour().doubleValue() > 2) {
-                setCell(newRow, 38, meas.getTotalSizePerHour(), redStyle, redType);
+                ExportUtils.setCell(newRow, 38, meas.getTotalSizePerHour(), redStyle, redType);
             } else {
-                setCell(newRow, 38, meas.getTotalSizePerHour(), greenStyle, greenType);
+                ExportUtils.setCell(newRow, 38, meas.getTotalSizePerHour(), greenStyle, greenType);
             }
 
             if (meas.getTableSizePerDay().doubleValue() > 2) {
-                setCell(newRow, 39, meas.getTableSizePerDay(), redStyle, redType);
+                ExportUtils.setCell(newRow, 39, meas.getTableSizePerDay(), redStyle, redType);
             } else {
-                setCell(newRow, 39, meas.getTableSizePerDay(), greenStyle, greenType);
+                ExportUtils.setCell(newRow, 39, meas.getTableSizePerDay(), greenStyle, greenType);
             }
             rowNo++;
         }
         return rowNo;
     }
 
-    private void setCell(HSSFRow row, int cellNo, Object value, HSSFCellStyle cellStyle, CellType cellType) {
-        HSSFCell cell = row.getCell(cellNo);
-        if (null == cell) {
-            cell = row.createCell(cellNo);
-        }
-        cell.setCellStyle(cellStyle);
-        cell.setCellType(cellType);
+    private int generateStatistics(HSSFSheet sheet, PmDataLoadSpec spec, int startRowNo) {
+        int rowNo = startRowNo;
 
-        setCellValue(cell, value);
+        rowNo = generateStatisticsTotal(sheet, spec, rowNo);
+        rowNo++;
+        rowNo = generateStatisticsTitle(sheet, rowNo);
+        rowNo++;
+        rowNo = generateStatisticsData(sheet, spec, rowNo);
+
+        return rowNo;
     }
+
+    private int generateStatisticsTotal(HSSFSheet sheet, PmDataLoadSpec spec, int startRow) {
+        int rowNo = startRow;
+        HSSFRow row = sheet.getRow(rowNo);
+        if (null == row) {
+            row = sheet.createRow(rowNo);
+        }
+
+        HSSFCellStyle cellStyle = statisticTotalTplRow.getCell(20).getCellStyle();
+        CellType cellType = statisticTotalTplRow.getCell(20).getCellTypeEnum();
+        ExportUtils.setCell(row, 20, "Total", cellStyle, cellType);
+
+        HSSFCellStyle dataCellStyle = statisticTotalTplRow.getCell(31).getCellStyle();
+        CellType dataCellType = statisticTotalTplRow.getCell(31).getCellTypeEnum();
+
+        long totalDbRrPerNe = 0;
+        long totalDbRcPerNe = 0;
+        long totalDbMaxRows = 0;
+        long totalDbMaxCtrs = 0;
+        for (List<ArsMeasurement> dataList : spec.getMeasurementMap().values()) {
+            for (ArsMeasurement meas : dataList) {
+                totalDbRrPerNe += meas.getDbRrPerNe();
+                totalDbRcPerNe += meas.getDbRcPerNe();
+                totalDbMaxRows += meas.getDbMaxRows();
+                totalDbMaxCtrs += meas.getDbMaxCtrs();
+            }
+        }
+        ExportUtils.setCell(row, 31, totalDbRrPerNe, dataCellStyle, dataCellType);
+        ExportUtils.setCell(row, 32, totalDbRcPerNe, dataCellStyle, dataCellType);
+        ExportUtils.setCell(row, 34, totalDbMaxRows, dataCellStyle, dataCellType);
+        ExportUtils.setCell(row, 35, totalDbMaxCtrs, dataCellStyle, dataCellType);
+
+        return rowNo;
+    }
+
+    private int generateStatisticsTitle(HSSFSheet sheet, int startRow) {
+        int rowNo = startRow;
+        HSSFRow row = sheet.getRow(rowNo);
+        if (null == row) {
+            row = sheet.createRow(rowNo);
+        }
+
+        HSSFCellStyle oneNeCellStyle = statisticTitleTplRow.getCell(22).getCellStyle();
+        CellType oneNeCellType = statisticTitleTplRow.getCell(22).getCellTypeEnum();
+        ExportUtils.setCell(row, 22, "1 NE:", oneNeCellStyle, oneNeCellType);
+
+        HSSFCellStyle maxCellStype = statisticTitleTplRow.getCell(28).getCellStyle();
+        CellType maxCellType = statisticTitleTplRow.getCell(28).getCellTypeEnum();
+        ExportUtils.setCell(row, 28, "Max:", maxCellStype, maxCellType);
+
+        return rowNo;
+    }
+
+    private int generateStatisticsData(HSSFSheet sheet, PmDataLoadSpec spec, int startRow) {
+        int rowNo = startRow;
+
+        HSSFCellStyle leftTitleCellStyle = statisticDataTplRow.getCell(20).getCellStyle();
+        CellType leftTitleCellType = statisticDataTplRow.getCell(20).getCellTypeEnum();
+
+        HSSFCellStyle dataCellStype = statisticDataTplRow.getCell(22).getCellStyle();
+        CellType dataCellType = statisticDataTplRow.getCell(22).getCellTypeEnum();
+
+        long totalMphPerNe = 0;
+        long totalCphPerNe = 0;
+        long totalChaPerNe = 0;
+        long totalCdaPerNe = 0;
+        long totalMaxMph = 0;
+        long totalMaxCph = 0;
+        for (List<ArsMeasurement> dataList : spec.getMeasurementMap().values()) {
+            for (ArsMeasurement meas : dataList) {
+                totalMphPerNe += meas.getMphPerNE();
+                totalCphPerNe += meas.getCphPerNE();
+                totalChaPerNe += meas.getChaPerNE();
+                totalCdaPerNe += meas.getCdaPerNe();
+                totalMaxMph += meas.getMaxMph();
+                totalMaxCph += meas.getMaxCph();
+            }
+        }
+
+        HSSFRow dayRow = sheet.getRow(rowNo);
+        if (null == dayRow) {
+            dayRow = sheet.createRow(rowNo);
+        }
+        ExportUtils.setCell(dayRow, 20, "Day", leftTitleCellStyle, leftTitleCellType);
+        ExportUtils.setCell(dayRow, 22, totalMphPerNe * 24, dataCellStype, dataCellType);
+        ExportUtils.setCell(dayRow, 23, totalCphPerNe * 24, dataCellStype, dataCellType);
+        ExportUtils.setCell(dayRow, 25, totalChaPerNe * 24, dataCellStype, dataCellType);
+        ExportUtils.setCell(dayRow, 26, totalCdaPerNe * 24, dataCellStype, dataCellType);
+        ExportUtils.setCell(dayRow, 28, totalMaxMph * 24, dataCellStype, dataCellType);
+        ExportUtils.setCell(dayRow, 29, totalMaxCph * 24, dataCellStype, dataCellType);
+
+        rowNo++;
+        HSSFRow hourRow = sheet.getRow(rowNo);
+        if (null == hourRow) {
+            hourRow = sheet.createRow(rowNo);
+        }
+        ExportUtils.setCell(hourRow, 20, "Hour", leftTitleCellStyle, leftTitleCellType);
+        ExportUtils.setCell(hourRow, 22, totalMphPerNe, dataCellStype, dataCellType);
+        ExportUtils.setCell(hourRow, 23, totalCphPerNe, dataCellStype, dataCellType);
+        ExportUtils.setCell(hourRow, 25, totalChaPerNe, dataCellStype, dataCellType);
+        ExportUtils.setCell(hourRow, 26, totalCdaPerNe, dataCellStype, dataCellType);
+        ExportUtils.setCell(hourRow, 28, totalMaxMph, dataCellStype, dataCellType);
+        ExportUtils.setCell(hourRow, 29, totalMaxCph, dataCellStype, dataCellType);
+
+        rowNo++;
+        HSSFRow minuteRow = sheet.getRow(rowNo);
+        if (null == minuteRow) {
+            minuteRow = sheet.createRow(rowNo);
+        }
+        ExportUtils.setCell(minuteRow, 20, "Minute", leftTitleCellStyle, leftTitleCellType);
+        ExportUtils.setCell(minuteRow, 22, totalMphPerNe / 60, dataCellStype, dataCellType);
+        ExportUtils.setCell(minuteRow, 23, totalCphPerNe / 60, dataCellStype, dataCellType);
+        ExportUtils.setCell(minuteRow, 25, totalChaPerNe / 60, dataCellStype, dataCellType);
+        ExportUtils.setCell(minuteRow, 26, totalCdaPerNe / 60, dataCellStype, dataCellType);
+        ExportUtils.setCell(minuteRow, 28, totalMaxMph / 60, dataCellStype, dataCellType);
+        ExportUtils.setCell(minuteRow, 29, totalMaxCph / 60, dataCellStype, dataCellType);
+
+        rowNo++;
+        HSSFRow secondRow = sheet.getRow(rowNo);
+        if (null == secondRow) {
+            secondRow = sheet.createRow(rowNo);
+        }
+        ExportUtils.setCell(secondRow, 20, "Second", leftTitleCellStyle, leftTitleCellType);
+        ExportUtils.setCell(secondRow, 22, totalMphPerNe / 3600, dataCellStype, dataCellType);
+        ExportUtils.setCell(secondRow, 23, totalCphPerNe / 3600, dataCellStype, dataCellType);
+        ExportUtils.setCell(secondRow, 25, totalChaPerNe / 3600, dataCellStype, dataCellType);
+        ExportUtils.setCell(secondRow, 26, totalCdaPerNe / 3600, dataCellStype, dataCellType);
+        ExportUtils.setCell(secondRow, 28, totalMaxMph / 3600, dataCellStype, dataCellType);
+        ExportUtils.setCell(secondRow, 29, totalMaxCph / 3600, dataCellStype, dataCellType);
+
+        return rowNo;
+    }
+
+    private int generatePmFilesInfo(HSSFSheet sheet, PmDataLoadSpec spec, int startRow) {
+        int rowNo = startRow;
+
+        HSSFCellStyle groupTitleCellStyle = pmfileTitleTplRow.getCell(0).getCellStyle();
+        CellType groupTitleCellType = pmfileTitleTplRow.getCell(0).getCellTypeEnum();
+
+        HSSFCellStyle pmfileTitleCellStyle = pmfileTitleTplRow.getCell(2).getCellStyle();
+        CellType pmfileTitleCellType = pmfileTitleTplRow.getCell(2).getCellTypeEnum();
+
+        HSSFCellStyle groupDataCellStyle = pmfileDataTplRow.getCell(0).getCellStyle();
+        CellType groupDataCellType = pmfileDataTplRow.getCell(0).getCellTypeEnum();
+
+        HSSFCellStyle pmfileTotalCellStyle = pmfileDataTplRow.getCell(1).getCellStyle();
+        CellType pmfileTotalCellType = pmfileDataTplRow.getCell(1).getCellTypeEnum();
+
+        HSSFCellStyle pmfileDataCellStyle = pmfileDataTplRow.getCell(2).getCellStyle();
+        CellType pmfileDataCellType = pmfileDataTplRow.getCell(2).getCellTypeEnum();
+
+        HSSFRow titleRow = sheet.getRow(rowNo);
+        if (null == titleRow) {
+            titleRow = sheet.createRow(rowNo);
+        }
+        ExportUtils.setCell(titleRow, 0, "DN Pattern/Group Name", groupTitleCellStyle, groupTitleCellType);
+        ExportUtils.setCell(titleRow, 2, "Number of files per interval", pmfileTitleCellStyle, pmfileTitleCellType);
+
+        rowNo++;
+        HSSFRow dataRow = sheet.getRow(rowNo);
+        if (null == dataRow) {
+            dataRow = sheet.createRow(rowNo);
+        }
+        ExportUtils.setCell(dataRow, 0, "CSCF", groupDataCellStyle, groupDataCellType);
+        ExportUtils.setCell(dataRow, 1, "Total", pmfileTotalCellStyle, pmfileTotalCellType);
+        ExportUtils.setCell(dataRow, 2, "1 to 3", pmfileDataCellStyle, pmfileDataCellType);
+
+        return rowNo;
+    }
+
+
 
     private void setCell(HSSFRow row, int cellNo, Object value) {
-        HSSFCell cell = row.getCell(cellNo);
-        if (null == cell) {
-            cell = row.createCell(cellNo);
-        }
-
-        HSSFCellStyle cellStyle = dataTplRow.getCell(cellNo).getCellStyle();
-        CellType cellType = dataTplRow.getCell(cellNo).getCellTypeEnum();
-
-        cell.setCellStyle(cellStyle);
-        cell.setCellType(cellType);
-
-        setCellValue(cell, value);
-    }
-
-    private void setCellValue(HSSFCell cell, Object value) {
-        if (value instanceof String) {
-            cell.setCellValue((null == value) ? "" : (String) value);
-        } else if (value instanceof Boolean) {
-            cell.setCellValue((Boolean) value);
-        } else if (value instanceof Integer
-                || value instanceof Long
-                || value instanceof Double
-                || value instanceof BigDecimal) {
-            cell.setCellValue(Double.valueOf(value.toString()));
-        } else {
-            cell.setCellValue((null == value) ? "" : value.toString());
-        }
-    }
-
-    private void addAdaptationIdRow(int rowNo, HSSFSheet sheet, String adaptationId) {
-        HSSFRow newRow = sheet.getRow(rowNo);
-        if (null == newRow) {
-            newRow = sheet.createRow(rowNo);
-        }
-        HSSFCell cell = newRow.getCell(0);
-        if (null == cell) {
-            cell = newRow.createCell(0);
-        }
-
-        HSSFCellStyle cellStyle = adapIdTplRow.getCell(0).getCellStyle();
-        CellType cellType = adapIdTplRow.getCell(0).getCellTypeEnum();
-
-        cell.setCellStyle(cellStyle);
-        cell.setCellType(cellType);
-
-        String adapId = adaptationId.replaceAll("_", ".");
-        cell.setCellValue("Adaptation ID: " + adapId);
+        ExportUtils.setCell(row, cellNo, value, dataTplRow);
     }
 }

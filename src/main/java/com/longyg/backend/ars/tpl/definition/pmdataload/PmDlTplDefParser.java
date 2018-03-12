@@ -46,6 +46,12 @@ public class PmDlTplDefParser {
                     } else if (qName.equals("cellColor")) {
                         Iterator<Attribute> attributes = startElement.getAttributes();
                         tplDef.setCellColorRow(Integer.valueOf(attributes.next().getValue()));
+                    } else if (qName.equals("statistic")) {
+                        Iterator<Attribute> attributes = startElement.getAttributes();
+                        tplDef.setStatisticRow(Integer.valueOf(attributes.next().getValue()));
+                    } else if (qName.equals("pmfile")) {
+                        Iterator<Attribute> attributes = startElement.getAttributes();
+                        tplDef.setPmfileRow(Integer.valueOf(attributes.next().getValue()));
                     }
                     break;
             }

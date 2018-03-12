@@ -74,12 +74,25 @@ public class AlarmGenerator {
     }
 
     private void checkAlarmProperties(ArsAlarm arsAlarm, Alarm alarmOfLastRel) {
+        arsAlarm.setLastAlarmText(alarmOfLastRel.getAlarmText());
         arsAlarm.setAlarmTextChanged(!arsAlarm.getAlarmText().equals(alarmOfLastRel.getAlarmText()));
+
+        arsAlarm.setLastAlarmType(alarmOfLastRel.getAlarmType());
         arsAlarm.setAlarmTypeChanged(!arsAlarm.getAlarmType().equals(alarmOfLastRel.getAlarmType()));
+
+        arsAlarm.setLastCancelling(alarmOfLastRel.getCancelling());
         arsAlarm.setCancellingChanged(!arsAlarm.getCancelling().equals(alarmOfLastRel.getCancelling()));
+
+        arsAlarm.setLastInstructions(alarmOfLastRel.getInstructions());
         arsAlarm.setInstructionsChanged(!arsAlarm.getInstructions().equals(alarmOfLastRel.getInstructions()));
+
+        arsAlarm.setLastMeaning(alarmOfLastRel.getMeaning());
         arsAlarm.setMeaningChanged(!arsAlarm.getMeaning().equals(alarmOfLastRel.getMeaning()));
+
+        arsAlarm.setLastProbableCause(alarmOfLastRel.getProbableCause());
         arsAlarm.setProbableCauseChanged(!arsAlarm.getProbableCause().equals(alarmOfLastRel.getProbableCause()));
+
+        arsAlarm.setLastPerceivedSeverityInfo(alarmOfLastRel.getPerceivedSeverityInfo());
         arsAlarm.setSeverityChanged(!arsAlarm.getPerceivedSeverityInfo().equals(alarmOfLastRel.getPerceivedSeverityInfo()));
     }
 

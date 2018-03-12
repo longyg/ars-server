@@ -4,4 +4,6 @@
     <title rowNo="1"></title>
     <data rowNo="2"></data>
     <cellColor rowNo="3"></cellColor>
+    <statistic rowNo="4"></statistic>
+    <pmfile rowNo="11"></pmfile>
 </template>
