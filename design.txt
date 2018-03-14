@@ -1,3 +1,4 @@
+========================= Modules ==============================
 NE Types (Done)
 NE Releases (Done)
 
@@ -17,8 +18,36 @@ Release Configuration: (Done)
  - Parent hierarchy
  - User Story Variables
 
-Generate ARS:
+========================  Generate ARS ==========================
 1. NE Type
 2. NE release
 3. Last NE release
 4. Older NE releases
+
+=========================== To be done =========================
+General:
+1. The value of some excel cell should be calculated by formula, same as ARS template
+
+Object Model:
+1. Set alarming object flag for exiting PM object in object model
+2. Add FM only object in object model
+3. Set CM object flag for existing PM object in object model
+4. Mark object which has icon
+5. Mark object which has GUI launch
+6. Add 3GPP NBI mapping strategy
+7. Set integration version for agent object
+8. Mark agent object and interface object
+9. Add interface objects in object model
+
+PM Data Load:
+1. Set time aggregation rule for certain measurement
+2. Set BH for certain measurement
+3. Mark if measurement is active or not
+4. Set default/minimal interval for certain measurement
+5. Global config: storage days
+6. Global config: default bytes for one counter
+7. Set measurement group
+8. Set number of PM files per interval
+
+============================ Issues ===============================
+1. One blank line is added between two adaptations' topology in object model

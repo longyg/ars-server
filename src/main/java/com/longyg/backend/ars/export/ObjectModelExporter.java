@@ -6,7 +6,6 @@ import com.longyg.frontend.model.ars.om.ObjectClassInfo;
 import com.longyg.frontend.model.ars.om.ObjectModelSpec;
 import com.longyg.frontend.service.ArsService;
 import org.apache.poi.hssf.usermodel.*;
-import org.apache.poi.ss.usermodel.CellType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -52,54 +51,35 @@ public class ObjectModelExporter extends Exporter {
             setCellValue(row, i, "|");
         }
          **/
-        setCellValue(row, colNo,"|- " + oci.getName());
+        setCell(row, colNo,"|- " + oci.getName());
     }
 
     private void setObjectAttributes(HSSFRow row, ObjectClassInfo oci) {
-        setCellValue(row, 8, oci.isAlarmingObject() ? "A" : "");
-        setCellValue(row, 9, oci.isMeasuredObject() ? "M" : "");
-        setCellValue(row, 10, oci.isCmObject() ? "x" : "");
-        setCellValue(row, 11, oci.isHasIcon() ? "x" : "");
-        setCellValue(row, 12, oci.isHasGuiLuanch() ? "x" : "");
-        setCellValue(row, 13, oci.getTgppObject());
-        setCellValue(row, 14, oci.getIntVersion());
-        setCellValue(row, 15, oci.getIntNasda());
-        setCellValue(row, 16, oci.getMin());
-        setCellValue(row, 17, oci.getMax());
-        setCellValue(row, 18, oci.getAvg());
-        setCellValue(row, 19, oci.getAvgPerNet());
-        setCellValue(row, 20, oci.getMaxPerNet());
-        setCellValue(row, 21, oci.getMaxPerNE());
-        setCellValue(row, 22, oci.getMaxNePerNet());
-        setCellValue(row, 23, oci.getAvgNePerNet());
-        setCellValue(row, 24, oci.isMocrNeeded() ? "x" : "");
-        setCellValue(row, 25, oci.getSupportedReleases());
-        setCellValue(row, 26, oci.isTransient() ? "Transient" : "MO");
-        setCellValue(row, 27, oci.getPresentation());
-        setCellValue(row, 28, oci.getNameInOmes());
-        setCellValue(row, 29, oci.getAdaptationId());
+        setCell(row, 8, oci.isAlarmingObject() ? "A" : "");
+        setCell(row, 9, oci.isMeasuredObject() ? "M" : "");
+        setCell(row, 10, oci.isCmObject() ? "x" : "");
+        setCell(row, 11, oci.isHasIcon() ? "x" : "");
+        setCell(row, 12, oci.isHasGuiLuanch() ? "x" : "");
+        setCell(row, 13, oci.getTgppObject());
+        setCell(row, 14, oci.getIntVersion());
+        setCell(row, 15, oci.getIntNasda());
+        setCell(row, 16, oci.getMin());
+        setCell(row, 17, oci.getMax());
+        setCell(row, 18, oci.getAvg());
+        setCell(row, 19, oci.getAvgPerNet());
+        setCell(row, 20, oci.getMaxPerNet());
+        setCell(row, 21, oci.getMaxPerNE());
+        setCell(row, 22, oci.getMaxNePerNet());
+        setCell(row, 23, oci.getAvgNePerNet());
+        setCell(row, 24, oci.isMocrNeeded() ? "x" : "");
+        setCell(row, 25, oci.getSupportedReleases());
+        setCell(row, 26, oci.isTransient() ? "Transient" : "MO");
+        setCell(row, 27, oci.getPresentation());
+        setCell(row, 28, oci.getNameInOmes());
+        setCell(row, 29, oci.getAdaptationId());
     }
 
-    private void setCellValue(HSSFRow row, int cellNo, Object value) {
-        HSSFCell cell = row.getCell(cellNo);
-        if (null == cell) {
-            cell = row.createCell(cellNo);
-
-            HSSFCellStyle cellStyle = this.startRow.getCell(cellNo).getCellStyle();
-            CellType cellType = this.startRow.getCell(cellNo).getCellTypeEnum();
-
-            cell.setCellStyle(cellStyle);
-            cell.setCellType(cellType);
-
-        }
-        if (value instanceof String) {
-            cell.setCellValue((null == value) ? "" : (String) value);
-        } else if (value instanceof Boolean) {
-            cell.setCellValue((Boolean) value);
-        } else if (value instanceof Integer) {
-            cell.setCellValue((Integer) value);
-        } else {
-            cell.setCellValue((null == value) ? "" : value.toString());
-        }
+    private void setCell(HSSFRow row, int cellNo, Object value) {
+        ExportUtils.setCell(row, cellNo, value, startRow);
     }
 }

@@ -2,7 +2,6 @@ package com.longyg.backend.ars.generator;
 
 import com.longyg.backend.adaptation.pm.Counter;
 import com.longyg.backend.adaptation.pm.PmDataLoadRepository;
-import com.longyg.frontend.model.ars.ArsConfig;
 import com.longyg.frontend.model.ars.counter.ArsCounter;
 import com.longyg.frontend.model.ars.counter.CounterMeas;
 import com.longyg.frontend.model.ars.counter.CounterSpec;

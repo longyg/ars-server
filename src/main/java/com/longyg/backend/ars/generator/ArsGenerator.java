@@ -5,7 +5,6 @@ import com.longyg.backend.adaptation.main.AdaptationResourceParser;
 import com.longyg.backend.adaptation.svn.SvnDownloader;
 import com.longyg.frontend.model.ars.ARS;
 import com.longyg.frontend.model.ars.ArsConfig;
-import com.longyg.frontend.model.ars.om.ObjectModelSpec;
 import com.longyg.frontend.model.config.AdaptationResource;
 import com.longyg.frontend.model.config.InterfaceObject;
 import com.longyg.frontend.service.ArsService;
