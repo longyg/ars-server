@@ -18,7 +18,7 @@ public class PmbCommonParser implements Parser {
     public PmbCommonParser(PmAdaptation pmAdaptation) {
         this.pmAdaptation = pmAdaptation;
     }
-    public void parse(InputStream is) {
+    public void parse(InputStream is) throws Exception {
         try {
             Document doc = CommonUtils.createDocument(is);
 
@@ -29,6 +29,7 @@ public class PmbCommonParser implements Parser {
             LOG.debug(pmAdaptation);
         } catch (Exception e) {
             LOG.error("Exception while parsing pmb common", e);
+            throw new Exception("Exception while parsing pmb common", e);
         }
     }
 }

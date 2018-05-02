@@ -20,7 +20,7 @@ public class PmbParser implements Parser{
         this.pmAdaptation = pmAdaptation;
     }
 
-    public void parse(InputStream is) {
+    public void parse(InputStream is) throws Exception {
         try {
             Document doc = CommonUtils.createDocument(is);
 
@@ -30,6 +30,7 @@ public class PmbParser implements Parser{
 
         } catch (Exception e) {
             LOG.error("Exception while parsing pmb", e);
+            throw new Exception("Exception while parsing pmb", e);
         }
     }
 

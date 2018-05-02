@@ -13,7 +13,7 @@ import java.util.zip.ZipEntry;
 public class FmPackageParser {
     private static final Logger LOG = Logger.getLogger(FmPackageParser.class);
 
-    public FmAdaptation parse(InputStream is) {
+    public FmAdaptation parse(InputStream is) throws Exception {
         ManualCloseZipInputStream zin = new ManualCloseZipInputStream(is);
         ZipEntry entry = null;
         FmAdaptation fmAdaptation = new FmAdaptation();
@@ -36,7 +36,8 @@ public class FmPackageParser {
                 }
             }
         } catch (Exception e) {
-            LOG.error("Exception while parsing PMB zip: " + entry.getName(), e);
+            LOG.error("Exception while parsing FMB zip: " + entry.getName(), e);
+            throw new Exception("Exception while parsing FMB zip: " + entry.getName(), e);
         }
         LOG.debug("Adding FmAdaptation: " + fmAdaptation);
         return fmAdaptation;

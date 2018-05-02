@@ -6,17 +6,18 @@ import com.longyg.frontend.model.ars.ARS;
 import com.longyg.frontend.model.ars.pm.ArsMeasurement;
 import com.longyg.frontend.model.ars.pm.PmDataLoadSpec;
 import com.longyg.frontend.service.ArsService;
-import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.*;
-import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 @Component
 public class PmDataLoadExporter extends Exporter {
-    private static final Logger LOG = Logger.getLogger(PmDataLoadExporter.class);
+    private static final Logger LOG = Logger.getLogger(PmDataLoadExporter.class.getName());
 
     @Autowired
     private ArsService arsService;
@@ -24,7 +25,6 @@ public class PmDataLoadExporter extends Exporter {
     private HSSFRow adapIdTplRow;
     private HSSFRow titleTplRow;
     private HSSFRow dataTplRow;
-    private HSSFRow colorTplRow;
     private HSSFRow statisticTotalTplRow;
     private HSSFRow statisticTitleTplRow;
     private HSSFRow statisticDataTplRow;
@@ -45,7 +45,6 @@ public class PmDataLoadExporter extends Exporter {
         this.adapIdTplRow = sheet.getRow(tplDef.getAdapIdRow());
         this.titleTplRow = sheet.getRow(tplDef.getTitleRow());
         this.dataTplRow = sheet.getRow(tplDef.getDataRow());
-        this.colorTplRow = sheet.getRow(tplDef.getCellColorRow());
         this.statisticTotalTplRow = sheet.getRow(tplDef.getStatisticRow());
         this.statisticTitleTplRow = sheet.getRow(tplDef.getStatisticRow() + 1);
         this.statisticDataTplRow = sheet.getRow(tplDef.getStatisticRow() + 2);
@@ -60,17 +59,26 @@ public class PmDataLoadExporter extends Exporter {
     }
 
     private int generateXlsContent(HSSFSheet sheet, PmDataLoadSpec spec) {
-        int rowNo = 0;
-        rowNo = generateMeasurements(sheet, spec, rowNo);
-        rowNo = rowNo + 1;
-        rowNo = generateStatistics(sheet, spec, rowNo);
-        rowNo = rowNo + 2;
-        rowNo = generatePmFilesInfo(sheet, spec, rowNo);
-        return rowNo;
+        int startRowNo = 0;
+
+        int measStartRowNo = startRowNo + 1;
+        int measEndRowNo = generateMeasurements(sheet, spec, measStartRowNo);
+        int statisticStartRowNo = measEndRowNo + 2;
+        int statisticEndRowNo = generateStatistics(sheet, statisticStartRowNo, measStartRowNo, measEndRowNo);
+        int pmFileStartRowNo = statisticEndRowNo + 2;
+        int pmFileEndRowNo = generatePmFilesInfo(sheet, spec, pmFileStartRowNo);
+
+        int endRwoNo = pmFileEndRowNo;
+
+        LOG.info(String.format("measStartRowNo: %d, measEndRowNo: %d, statisticStartRowNo: %d, " +
+                "statisticEndRowNo: %d, pmFileStartRowNo: %d, pmFileEndRowNo: %d",
+                measStartRowNo, measEndRowNo, statisticStartRowNo,
+                statisticEndRowNo, pmFileStartRowNo, pmFileEndRowNo));
+        return endRwoNo;
     }
 
     private int generateMeasurements(HSSFSheet sheet, PmDataLoadSpec spec, int startRowNo) {
-        int rowNo = startRowNo;
+        int rowNo = startRowNo - 1;
         if (spec.getMeasurementMap().keySet().size() > 1) {
             for (String adaptationId : spec.getMeasurementMap().keySet()) {
                 ExportUtils.addAdaptationIdRow(rowNo, sheet, adaptationId, adapIdTplRow);
@@ -84,7 +92,7 @@ public class PmDataLoadExporter extends Exporter {
             String adaptationId = spec.getMeasurementMap().keySet().iterator().next();
             rowNo = addDataRows(rowNo, sheet, spec.getMeasurementMap().get(adaptationId));
         } else {
-            LOG.error("Empty PM Data Load entries");
+            LOG.severe("Empty PM Data Load entries");
         }
         return rowNo;
     }
@@ -97,18 +105,7 @@ public class PmDataLoadExporter extends Exporter {
                 newRow = sheet.createRow(rowNo);
             }
 
-            if (meas.getTotalSizePerHour().doubleValue() > 2) {
-                HSSFCellStyle cellStyle = colorTplRow.getCell(1).getCellStyle();
-                CellType cellType = colorTplRow.getCell(1).getCellTypeEnum();
-                ExportUtils.setCell(newRow, 0, meas.getName(), cellStyle, cellType);
-            } else if (meas.getTableSizePerDay().doubleValue() > 2) {
-                HSSFCellStyle cellStyle = colorTplRow.getCell(0).getCellStyle();
-                CellType cellType = colorTplRow.getCell(0).getCellTypeEnum();
-                ExportUtils.setCell(newRow, 0, meas.getName(), cellStyle, cellType);
-            } else {
-                setCell(newRow, 0, meas.getName());
-            }
-
+            setCell(newRow, 0, meas.getName());
             setCell(newRow, 1, meas.getNameInOmes());
             setCell(newRow, 2, meas.getMeasuredObject());
             setCell(newRow, 3, meas.isSupported() ? "Yes" : "No");
@@ -130,58 +127,145 @@ public class PmDataLoadExporter extends Exporter {
             setCell(newRow, 19, meas.getMinimalInterval());
             setCell(newRow, 20, meas.getStorageDays());
             setCell(newRow, 21, meas.getBytesPerCounter());
-            setCell(newRow, 22, meas.getMphPerNE());
-            setCell(newRow, 23, meas.getCphPerNE());
+
+            int rowRealNo = rowNo + 1;
+
+            // K2*R2*(60/T2)
+            String formula = String.format("K%d*R%d*(60/T%d)", rowRealNo, rowRealNo, rowRealNo);
+            setFormulaCell(newRow, 22, formula);
+
+            // W2*L2
+            formula = String.format("W%d*L%d", rowRealNo, rowRealNo);
+            setFormulaCell(newRow, 23, formula);
+
             setCell(newRow, 24, "");
-            setCell(newRow, 25, meas.getChaPerNE());
-            setCell(newRow, 26, meas.getCdaPerNe());
+
+            // X2/(60/S2)
+            formula = String.format("X%d/(60/S%d)", rowRealNo, rowRealNo);
+            setFormulaCell(newRow, 25, formula);
+
+            // 24*Z2/24
+            formula = String.format("24*Z%d/24", rowRealNo);
+            setFormulaCell(newRow, 26, formula);
+
             setCell(newRow, 27, "");
-            setCell(newRow, 28, meas.getMaxMph());
-            setCell(newRow, 29, meas.getMaxCph());
+
+            // J2*R2*(60/T2)
+            formula = String.format("J%d*R%d*(60/T%d)", rowRealNo, rowRealNo, rowRealNo);
+            setFormulaCell(newRow, 28, formula);
+
+            // AC2*L2
+            formula = String.format("AC%d*L%d", rowRealNo, rowRealNo);
+            setFormulaCell(newRow, 29, formula);
+
             setCell(newRow, 30, meas.getMeasGroup());
-            setCell(newRow, 31, meas.getDbRrPerNe());
-            setCell(newRow, 32, meas.getDbRcPerNe());
-            setCell(newRow, 33, meas.getMsPerNe());
-            setCell(newRow, 34, meas.getDbMaxRows());
-            setCell(newRow, 35, meas.getDbMaxCtrs());
-            setCell(newRow, 36, meas.getMaxMs());
-            setCell(newRow, 37, meas.getTotalBytesPerInterval());
 
-            HSSFCellStyle greenStyle = colorTplRow.getCell(2).getCellStyle();
-            CellType greenType = colorTplRow.getCell(2).getCellTypeEnum();
-            HSSFCellStyle redStyle = colorTplRow.getCell(3).getCellStyle();
-            CellType redType = colorTplRow.getCell(3).getCellTypeEnum();
+            // 24*W2*U2
+            formula = String.format("24*W%d*U%d", rowRealNo, rowRealNo);
+            setFormulaCell(newRow, 31, formula);
 
-            if (meas.getTotalSizePerHour().doubleValue() > 2) {
-                ExportUtils.setCell(newRow, 38, meas.getTotalSizePerHour(), redStyle, redType);
-            } else {
-                ExportUtils.setCell(newRow, 38, meas.getTotalSizePerHour(), greenStyle, greenType);
-            }
+            // 24*X2*U2
+            formula = String.format("24*X%d*U%d", rowRealNo, rowRealNo);
+            setFormulaCell(newRow, 32, formula);
 
-            if (meas.getTableSizePerDay().doubleValue() > 2) {
-                ExportUtils.setCell(newRow, 39, meas.getTableSizePerDay(), redStyle, redType);
-            } else {
-                ExportUtils.setCell(newRow, 39, meas.getTableSizePerDay(), greenStyle, greenType);
-            }
+            // AG2*V2
+            formula = String.format("AG%d*V%d", rowRealNo, rowRealNo);
+            setFormulaCell(newRow, 33, formula);
+
+            // 24*AC2*U2
+            formula = String.format("24*AC%d*U%d", rowRealNo, rowRealNo);
+            setFormulaCell(newRow, 34, formula);
+
+            // 24*AD2*U2
+            formula = String.format("24*AD%d*U%d", rowRealNo, rowRealNo);
+            setFormulaCell(newRow, 35, formula);
+
+            // AJ2*V2
+            formula = String.format("AJ%d*V%d", rowRealNo, rowRealNo);
+            setFormulaCell(newRow, 36, formula);
+
+            // J2*L2*V2
+            formula = String.format("J%d*L%d*V%d", rowRealNo, rowRealNo, rowRealNo);
+            setFormulaCell(newRow, 37, formula);
+
+            // (AL2*(60/T2))/(1024*1024*1024)
+            formula = String.format("(AL%d*(60/T%d))/(1024*1024*1024)", rowRealNo, rowRealNo);
+            setFormulaCell(newRow, 38, formula);
+
+            // AM2*24
+            formula = String.format("AM%d*24", rowRealNo);
+            setFormulaCell(newRow, 39, formula);
+
             rowNo++;
         }
-        return rowNo;
-    }
 
-    private int generateStatistics(HSSFSheet sheet, PmDataLoadSpec spec, int startRowNo) {
-        int rowNo = startRowNo;
-
-        rowNo = generateStatisticsTotal(sheet, spec, rowNo);
-        rowNo++;
-        rowNo = generateStatisticsTitle(sheet, rowNo);
-        rowNo++;
-        rowNo = generateStatisticsData(sheet, spec, rowNo);
+        setConditionFormatting(sheet, startRowNo + 2, rowNo);
 
         return rowNo;
     }
 
-    private int generateStatisticsTotal(HSSFSheet sheet, PmDataLoadSpec spec, int startRow) {
-        int rowNo = startRow;
+    private void setConditionFormatting(HSSFSheet sheet, int startRowNo, int endRowNo) {
+        HSSFSheetConditionalFormatting scf = sheet.getSheetConditionalFormatting();
+
+        String formula02 = String.format("AM%d > 2", startRowNo - 1);
+        HSSFConditionalFormattingRule rule02 = scf.createConditionalFormattingRule(formula02);
+        HSSFPatternFormatting pp02 = rule02.createPatternFormatting();
+        pp02.setFillBackgroundColor(IndexedColors.YELLOW.getIndex());
+        HSSFFontFormatting fp02 = rule02.createFontFormatting();
+        fp02.setFontColorIndex(IndexedColors.RED.getIndex());
+        String rangeStr02 = String.format("A%d:A%d", startRowNo, endRowNo);
+        CellRangeAddress[] range02 = {CellRangeAddress.valueOf(rangeStr02)};
+        ConditionalFormattingRule[] rules02 = {rule02};
+        scf.addConditionalFormatting(range02, rules02);
+
+        String formula01 = String.format("AN%d > 2", startRowNo - 1);
+        HSSFConditionalFormattingRule rule01 = scf.createConditionalFormattingRule(formula01);
+        HSSFPatternFormatting pp01 = rule01.createPatternFormatting();
+        pp01.setFillBackgroundColor(IndexedColors.YELLOW.getIndex());
+        String rangeStr01 = String.format("A%d:A%d", startRowNo, endRowNo);
+        CellRangeAddress[] range01 = {CellRangeAddress.valueOf(rangeStr01)};
+        ConditionalFormattingRule[] rules01 = {rule01};
+        scf.addConditionalFormatting(range01, rules01);
+
+        //
+        HSSFConditionalFormattingRule rule1 = scf.createConditionalFormattingRule(ComparisonOperator.LT, "2");
+        HSSFFontFormatting fp1 = rule1.createFontFormatting();
+        fp1.setFontColorIndex(IndexedColors.GREEN.getIndex());
+        HSSFPatternFormatting pp1 = rule1.createPatternFormatting();
+        pp1.setFillBackgroundColor(IndexedColors.LIGHT_GREEN.getIndex());
+
+        //
+        HSSFConditionalFormattingRule rule2 = scf.createConditionalFormattingRule(ComparisonOperator.GT, "2");
+        HSSFFontFormatting fp2 = rule2.createFontFormatting();
+        fp2.setFontColorIndex(IndexedColors.DARK_RED.getIndex());
+        HSSFPatternFormatting pp2 = rule2.createPatternFormatting();
+        pp2.setFillBackgroundColor(IndexedColors.RED.getIndex());
+
+        String rangeStr1 = String.format("AM%d:AM%d", startRowNo, endRowNo);
+        CellRangeAddress[] range1 = {CellRangeAddress.valueOf(rangeStr1)};
+        ConditionalFormattingRule[] rules = {rule1, rule2};
+        scf.addConditionalFormatting(range1, rules);
+
+        String rangeStr2 = String.format("AN%d:AN%d", startRowNo, endRowNo);
+        CellRangeAddress[] range2 = {CellRangeAddress.valueOf(rangeStr2)};
+        scf.addConditionalFormatting(range2, rules);
+    }
+
+    private int generateStatistics(HSSFSheet sheet, int startRowNo, int measStartRowNo, int measEndRowNo) {
+        int totalStartRowNo = startRowNo;
+
+        int totalEndRowNo = generateStatisticsTotal(sheet, totalStartRowNo, measStartRowNo, measEndRowNo);
+        int titleStartRowNo = totalEndRowNo + 1;
+        int titleEndRowNo = generateStatisticsTitle(sheet, titleStartRowNo);
+        int dataStartRowNo = titleEndRowNo + 1;
+        int dataEndRowNo = generateStatisticsData(sheet, dataStartRowNo, measStartRowNo, measEndRowNo);
+
+        return dataEndRowNo;
+    }
+
+    private int generateStatisticsTotal(HSSFSheet sheet,
+                                        int startRowNo, int measStartRowNo, int measEndRowNo) {
+        int rowNo = startRowNo - 1;
         HSSFRow row = sheet.getRow(rowNo);
         if (null == row) {
             row = sheet.createRow(rowNo);
@@ -192,30 +276,24 @@ public class PmDataLoadExporter extends Exporter {
         ExportUtils.setCell(row, 20, "Total", cellStyle, cellType);
 
         HSSFCellStyle dataCellStyle = statisticTotalTplRow.getCell(31).getCellStyle();
-        CellType dataCellType = statisticTotalTplRow.getCell(31).getCellTypeEnum();
 
-        long totalDbRrPerNe = 0;
-        long totalDbRcPerNe = 0;
-        long totalDbMaxRows = 0;
-        long totalDbMaxCtrs = 0;
-        for (List<ArsMeasurement> dataList : spec.getMeasurementMap().values()) {
-            for (ArsMeasurement meas : dataList) {
-                totalDbRrPerNe += meas.getDbRrPerNe();
-                totalDbRcPerNe += meas.getDbRcPerNe();
-                totalDbMaxRows += meas.getDbMaxRows();
-                totalDbMaxCtrs += meas.getDbMaxCtrs();
-            }
-        }
-        ExportUtils.setCell(row, 31, totalDbRrPerNe, dataCellStyle, dataCellType);
-        ExportUtils.setCell(row, 32, totalDbRcPerNe, dataCellStyle, dataCellType);
-        ExportUtils.setCell(row, 34, totalDbMaxRows, dataCellStyle, dataCellType);
-        ExportUtils.setCell(row, 35, totalDbMaxCtrs, dataCellStyle, dataCellType);
+        String formula = String.format("SUM(AF%d:AF%d)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(row, 31, formula, dataCellStyle);
 
-        return rowNo;
+        formula = String.format("SUM(AG%d:AG%d)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(row, 32, formula, dataCellStyle);
+
+        formula = String.format("SUM(AI%d:AI%d)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(row, 34, formula, dataCellStyle);
+
+        formula = String.format("SUM(AJ%d:AJ%d)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(row, 35, formula, dataCellStyle);
+
+        return rowNo + 1;
     }
 
-    private int generateStatisticsTitle(HSSFSheet sheet, int startRow) {
-        int rowNo = startRow;
+    private int generateStatisticsTitle(HSSFSheet sheet, int startRowNo) {
+        int rowNo = startRowNo - 1;
         HSSFRow row = sheet.getRow(rowNo);
         if (null == row) {
             row = sheet.createRow(rowNo);
@@ -229,46 +307,35 @@ public class PmDataLoadExporter extends Exporter {
         CellType maxCellType = statisticTitleTplRow.getCell(28).getCellTypeEnum();
         ExportUtils.setCell(row, 28, "Max:", maxCellStype, maxCellType);
 
-        return rowNo;
+        return rowNo + 1;
     }
 
-    private int generateStatisticsData(HSSFSheet sheet, PmDataLoadSpec spec, int startRow) {
-        int rowNo = startRow;
+    private int generateStatisticsData(HSSFSheet sheet, int startRowNo, int measStartRowNo, int measEndRowNo) {
+        int rowNo = startRowNo - 1;
 
         HSSFCellStyle leftTitleCellStyle = statisticDataTplRow.getCell(20).getCellStyle();
         CellType leftTitleCellType = statisticDataTplRow.getCell(20).getCellTypeEnum();
 
         HSSFCellStyle dataCellStype = statisticDataTplRow.getCell(22).getCellStyle();
-        CellType dataCellType = statisticDataTplRow.getCell(22).getCellTypeEnum();
-
-        long totalMphPerNe = 0;
-        long totalCphPerNe = 0;
-        long totalChaPerNe = 0;
-        long totalCdaPerNe = 0;
-        long totalMaxMph = 0;
-        long totalMaxCph = 0;
-        for (List<ArsMeasurement> dataList : spec.getMeasurementMap().values()) {
-            for (ArsMeasurement meas : dataList) {
-                totalMphPerNe += meas.getMphPerNE();
-                totalCphPerNe += meas.getCphPerNE();
-                totalChaPerNe += meas.getChaPerNE();
-                totalCdaPerNe += meas.getCdaPerNe();
-                totalMaxMph += meas.getMaxMph();
-                totalMaxCph += meas.getMaxCph();
-            }
-        }
 
         HSSFRow dayRow = sheet.getRow(rowNo);
         if (null == dayRow) {
             dayRow = sheet.createRow(rowNo);
         }
         ExportUtils.setCell(dayRow, 20, "Day", leftTitleCellStyle, leftTitleCellType);
-        ExportUtils.setCell(dayRow, 22, totalMphPerNe * 24, dataCellStype, dataCellType);
-        ExportUtils.setCell(dayRow, 23, totalCphPerNe * 24, dataCellStype, dataCellType);
-        ExportUtils.setCell(dayRow, 25, totalChaPerNe * 24, dataCellStype, dataCellType);
-        ExportUtils.setCell(dayRow, 26, totalCdaPerNe * 24, dataCellStype, dataCellType);
-        ExportUtils.setCell(dayRow, 28, totalMaxMph * 24, dataCellStype, dataCellType);
-        ExportUtils.setCell(dayRow, 29, totalMaxCph * 24, dataCellStype, dataCellType);
+
+        String formula = String.format("24*SUM(W%d:W%d)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(dayRow, 22, formula, dataCellStype);
+        formula = String.format("24*SUM(X%d:X%d)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(dayRow, 23, formula, dataCellStype);
+        formula = String.format("24*SUM(Z%d:Z%d)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(dayRow, 25, formula, dataCellStype);
+        formula = String.format("24*SUM(AA%d:AA%d)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(dayRow, 26, formula, dataCellStype);
+        formula = String.format("24*SUM(AC%d:AC%d)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(dayRow, 28, formula, dataCellStype);
+        formula = String.format("24*SUM(AD%d:AD%d)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(dayRow, 29, formula, dataCellStype);
 
         rowNo++;
         HSSFRow hourRow = sheet.getRow(rowNo);
@@ -276,12 +343,19 @@ public class PmDataLoadExporter extends Exporter {
             hourRow = sheet.createRow(rowNo);
         }
         ExportUtils.setCell(hourRow, 20, "Hour", leftTitleCellStyle, leftTitleCellType);
-        ExportUtils.setCell(hourRow, 22, totalMphPerNe, dataCellStype, dataCellType);
-        ExportUtils.setCell(hourRow, 23, totalCphPerNe, dataCellStype, dataCellType);
-        ExportUtils.setCell(hourRow, 25, totalChaPerNe, dataCellStype, dataCellType);
-        ExportUtils.setCell(hourRow, 26, totalCdaPerNe, dataCellStype, dataCellType);
-        ExportUtils.setCell(hourRow, 28, totalMaxMph, dataCellStype, dataCellType);
-        ExportUtils.setCell(hourRow, 29, totalMaxCph, dataCellStype, dataCellType);
+
+        formula = String.format("SUM(W%d:W%d)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(hourRow, 22, formula, dataCellStype);
+        formula = String.format("SUM(X%d:X%d)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(hourRow, 23, formula, dataCellStype);
+        formula = String.format("SUM(Z%d:Z%d)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(hourRow, 25, formula, dataCellStype);
+        formula = String.format("SUM(AA%d:AA%d)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(hourRow, 26, formula, dataCellStype);
+        formula = String.format("SUM(AC%d:AC%d)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(hourRow, 28, formula, dataCellStype);
+        formula = String.format("SUM(AD%d:AD%d)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(hourRow, 29, formula, dataCellStype);
 
         rowNo++;
         HSSFRow minuteRow = sheet.getRow(rowNo);
@@ -289,12 +363,19 @@ public class PmDataLoadExporter extends Exporter {
             minuteRow = sheet.createRow(rowNo);
         }
         ExportUtils.setCell(minuteRow, 20, "Minute", leftTitleCellStyle, leftTitleCellType);
-        ExportUtils.setCell(minuteRow, 22, totalMphPerNe / 60, dataCellStype, dataCellType);
-        ExportUtils.setCell(minuteRow, 23, totalCphPerNe / 60, dataCellStype, dataCellType);
-        ExportUtils.setCell(minuteRow, 25, totalChaPerNe / 60, dataCellStype, dataCellType);
-        ExportUtils.setCell(minuteRow, 26, totalCdaPerNe / 60, dataCellStype, dataCellType);
-        ExportUtils.setCell(minuteRow, 28, totalMaxMph / 60, dataCellStype, dataCellType);
-        ExportUtils.setCell(minuteRow, 29, totalMaxCph / 60, dataCellStype, dataCellType);
+
+        formula = String.format("SUM(W%d:W%d)/60", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(minuteRow, 22, formula, dataCellStype);
+        formula = String.format("SUM(X%d:X%d)/60", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(minuteRow, 23, formula, dataCellStype);
+        formula = String.format("SUM(Z%d:Z%d)/60", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(minuteRow, 25, formula, dataCellStype);
+        formula = String.format("SUM(AA%d:AA%d)/60", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(minuteRow, 26, formula, dataCellStype);
+        formula = String.format("SUM(AC%d:AC%d)/60", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(minuteRow, 28, formula, dataCellStype);
+        formula = String.format("SUM(AD%d:AD%d)/60", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(minuteRow, 29, formula, dataCellStype);
 
         rowNo++;
         HSSFRow secondRow = sheet.getRow(rowNo);
@@ -302,18 +383,25 @@ public class PmDataLoadExporter extends Exporter {
             secondRow = sheet.createRow(rowNo);
         }
         ExportUtils.setCell(secondRow, 20, "Second", leftTitleCellStyle, leftTitleCellType);
-        ExportUtils.setCell(secondRow, 22, totalMphPerNe / 3600, dataCellStype, dataCellType);
-        ExportUtils.setCell(secondRow, 23, totalCphPerNe / 3600, dataCellStype, dataCellType);
-        ExportUtils.setCell(secondRow, 25, totalChaPerNe / 3600, dataCellStype, dataCellType);
-        ExportUtils.setCell(secondRow, 26, totalCdaPerNe / 3600, dataCellStype, dataCellType);
-        ExportUtils.setCell(secondRow, 28, totalMaxMph / 3600, dataCellStype, dataCellType);
-        ExportUtils.setCell(secondRow, 29, totalMaxCph / 3600, dataCellStype, dataCellType);
 
-        return rowNo;
+        formula = String.format("SUM(W%d:W%d)/(60*60)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(secondRow, 22, formula, dataCellStype);
+        formula = String.format("SUM(X%d:X%d)/(60*60)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(secondRow, 23, formula, dataCellStype);
+        formula = String.format("SUM(Z%d:Z%d)/(60*60)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(secondRow, 25, formula, dataCellStype);
+        formula = String.format("SUM(AA%d:AA%d)/(60*60)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(secondRow, 26, formula, dataCellStype);
+        formula = String.format("SUM(AC%d:AC%d)/(60*60)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(secondRow, 28, formula, dataCellStype);
+        formula = String.format("SUM(AD%d:AD%d)/(60*60)", measStartRowNo, measEndRowNo);
+        ExportUtils.setFormulaCell(secondRow, 29, formula, dataCellStype);
+
+        return rowNo + 1;
     }
 
-    private int generatePmFilesInfo(HSSFSheet sheet, PmDataLoadSpec spec, int startRow) {
-        int rowNo = startRow;
+    private int generatePmFilesInfo(HSSFSheet sheet, PmDataLoadSpec spec, int startRowNo) {
+        int rowNo = startRowNo - 1;
 
         HSSFCellStyle groupTitleCellStyle = pmfileTitleTplRow.getCell(0).getCellStyle();
         CellType groupTitleCellType = pmfileTitleTplRow.getCell(0).getCellTypeEnum();
@@ -346,10 +434,14 @@ public class PmDataLoadExporter extends Exporter {
         ExportUtils.setCell(dataRow, 1, "Total", pmfileTotalCellStyle, pmfileTotalCellType);
         ExportUtils.setCell(dataRow, 2, "1 to 3", pmfileDataCellStyle, pmfileDataCellType);
 
-        return rowNo;
+        return rowNo + 1;
     }
 
     private void setCell(HSSFRow row, int cellNo, Object value) {
         ExportUtils.setCell(row, cellNo, value, dataTplRow);
+    }
+
+    private void setFormulaCell(HSSFRow row, int cellNo, String formula) {
+        ExportUtils.setFormulaCell(row, cellNo, formula, dataTplRow);
     }
 }

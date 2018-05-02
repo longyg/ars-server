@@ -13,7 +13,7 @@ import java.util.zip.ZipEntry;
 public class PmbPackageParser {
     private static final Logger LOG = Logger.getLogger(PmbPackageParser.class);
 
-    public PmAdaptation parse(InputStream is) {
+    public PmAdaptation parse(InputStream is) throws Exception {
         ManualCloseZipInputStream zin = new ManualCloseZipInputStream(is);
         ZipEntry entry = null;
         PmAdaptation pmAdaptation = new PmAdaptation();
@@ -37,6 +37,7 @@ public class PmbPackageParser {
             }
         } catch (Exception e) {
             LOG.error("Exception while parsing PMB zip: " + entry.getName(), e);
+            throw new Exception("Exception while parsing PMB zip: " + entry.getName(), e);
         }
         LOG.debug("Adding pmAdaptation: " + pmAdaptation);
         return pmAdaptation;

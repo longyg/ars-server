@@ -19,7 +19,7 @@ public class ManCommonParser implements Parser {
         this.fmAdaptation = fmAdaptation;
     }
 
-    public void parse(InputStream is) {
+    public void parse(InputStream is) throws Exception {
         try {
             Document doc = CommonUtils.createDocument(is);
             Element element = (Element) doc.getElementsByTagName("com.nokia.oss.common:Adaptation").item(0);
@@ -27,7 +27,8 @@ public class ManCommonParser implements Parser {
             fmAdaptation.setAdapRelease(element.getAttribute("release"));
             fmAdaptation.setPresentation(element.getAttribute("presentation"));
         } catch (Exception e) {
-            LOG.error("Exception while parsing pmb", e);
+            LOG.error("Exception while parsing man.common", e);
+            throw new Exception("Exception while parsing man.common", e);
         }
     }
 }

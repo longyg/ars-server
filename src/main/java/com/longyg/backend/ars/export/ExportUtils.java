@@ -37,6 +37,17 @@ public class ExportUtils {
         setCellValue(cell, value);
     }
 
+    public static void setFormulaCell(HSSFRow row, int cellNo, String formula, HSSFCellStyle cellStyle) {
+        HSSFCell cell = row.getCell(cellNo);
+        if (null == cell) {
+            cell = row.createCell(cellNo);
+        }
+        cell.setCellStyle(cellStyle);
+        cell.setCellType(CellType.FORMULA);
+
+        cell.setCellFormula(formula);
+    }
+
     public static void setCell(HSSFRow row, int cellNo, Object value, HSSFRow dataTplRow) {
         HSSFCell cell = row.getCell(cellNo);
         if (null == cell) {
@@ -50,6 +61,21 @@ public class ExportUtils {
         cell.setCellType(cellType);
 
         setCellValue(cell, value);
+    }
+
+    public static void setFormulaCell(HSSFRow row, int cellNo, String formula, HSSFRow dataTplRow) {
+        HSSFCell cell = row.getCell(cellNo);
+        if (null == cell) {
+            cell = row.createCell(cellNo);
+        }
+
+        HSSFCellStyle cellStyle = dataTplRow.getCell(cellNo).getCellStyle();
+//        CellType cellType = dataTplRow.getCell(cellNo).getCellTypeEnum();
+
+        cell.setCellStyle(cellStyle);
+        cell.setCellType(CellType.FORMULA);
+
+        cell.setCellFormula(formula);
     }
 
     private static void setCellValue(HSSFCell cell, Object value) {

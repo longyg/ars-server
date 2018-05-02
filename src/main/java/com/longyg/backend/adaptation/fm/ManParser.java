@@ -21,7 +21,7 @@ public class ManParser implements Parser {
         this.filename = filename;
     }
 
-    public void parse(InputStream is) {
+    public void parse(InputStream is) throws Exception {
         try {
             Document doc = CommonUtils.createDocument(is);
 
@@ -38,7 +38,8 @@ public class ManParser implements Parser {
 
             fmAdaptation.addAlarm(alarm);
         } catch (Exception e) {
-            LOG.error("Exception while parsing pmb", e);
+            LOG.error("Exception while parsing man", e);
+            throw new Exception("Exception while parsing man", e);
         }
     }
 }
