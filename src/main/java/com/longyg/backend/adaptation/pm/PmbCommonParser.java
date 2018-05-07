@@ -5,6 +5,7 @@ import com.longyg.backend.adaptation.common.Parser;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import java.io.InputStream;
 
@@ -21,8 +22,17 @@ public class PmbCommonParser implements Parser {
     public void parse(InputStream is) throws Exception {
         try {
             Document doc = CommonUtils.createDocument(is);
-
-            Element element = (Element) doc.getElementsByTagName("com.nokia.oss.common:Adaptation").item(0);
+            NodeList list = doc.getElementsByTagName("com.nokia.oss.common:Adaptation");
+            if (null == list) {
+                list = doc.getElementsByTagName("base:Adaptation");
+            }
+            Element element = null;
+            if (null != list) {
+                element = (Element) list.item(0);
+            }
+            if (null == element) {
+                throw new Exception("Invalid pmb.common adaptation");
+            }
             pmAdaptation.setAdapId(element.getAttribute("id"));
             pmAdaptation.setAdapRelease(element.getAttribute("release"));
             pmAdaptation.setPresentation(element.getAttribute("presentation"));

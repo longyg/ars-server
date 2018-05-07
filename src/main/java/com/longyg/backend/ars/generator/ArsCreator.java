@@ -138,7 +138,7 @@ public class ArsCreator {
         }
         if (needDownload) {
             SvnDownloader downloader = new SvnDownloader();
-            return downloader.download(rootUrl, "ylong", "$Leo2222*", filename, localPath, filename);
+            return downloader.download(rootUrl, "ylong", "$Leo4444*", filename, localPath, filename);
         } else {
             return localFile.getAbsolutePath();
         }
