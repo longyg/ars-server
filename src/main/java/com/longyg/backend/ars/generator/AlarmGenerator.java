@@ -118,7 +118,7 @@ public class AlarmGenerator {
         for (FmAdaptation fmAdaptation : fmAdaptations) {
             if (!fmAdaptation.getAdapRelease().equals(this.ars.getNeVersion())) {
                 for (Alarm alarm : fmAdaptation.getAlarms()) {
-                    ArsAlarm arsAlarm = createArsAlarm(alarm);
+                    ArsAlarm arsAlarm = findOrCreateArsAlarm(alarm, spec, adaptationId);
 
                     arsAlarm.addSupportedPreviousVersion(fmAdaptation.getAdapRelease());
 
@@ -132,7 +132,7 @@ public class AlarmGenerator {
         for (FmAdaptation fmAdaptation : fmAdaptations) {
             if (fmAdaptation.getAdapRelease().equals(this.ars.getNeVersion())) {
                 for (Alarm alarm : fmAdaptation.getAlarms()) {
-                    ArsAlarm arsAlarm = createArsAlarm(alarm);
+                    ArsAlarm arsAlarm = findOrCreateArsAlarm(alarm, spec, adaptationId);
 
                     arsAlarm.setSupported(true);
 
@@ -140,6 +140,23 @@ public class AlarmGenerator {
                 }
             }
         }
+    }
+
+    private ArsAlarm findOrCreateArsAlarm(Alarm alarm, AlarmSpec spec, String adaptationId) {
+        ArsAlarm arsAlarm = findArsAlarm(alarm, spec, adaptationId);
+        if (null == arsAlarm) {
+            arsAlarm = createArsAlarm(alarm);
+        }
+        return arsAlarm;
+    }
+
+    private ArsAlarm findArsAlarm(Alarm alarm, AlarmSpec spec, String adaptationId) {
+        for (ArsAlarm arsAlarm : spec.getAlarmList(adaptationId)) {
+            if (arsAlarm.getSpecificProblem().equals(alarm.getAlarmNumber())) {
+                return arsAlarm;
+            }
+        }
+        return null;
     }
 
     private ArsAlarm createArsAlarm(Alarm alarm) {

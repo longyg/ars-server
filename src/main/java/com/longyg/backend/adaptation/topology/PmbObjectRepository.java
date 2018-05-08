@@ -116,6 +116,12 @@ public class PmbObjectRepository {
     private void setObjectNumbers(PmbObject obj) throws Exception {
         int avgPerNE = 1;
         int maxPerNE = 1;
+        if (obj.getName().equals("CSCF")) {
+            LOG.info("CSCF");
+        }
+        if (obj.getName().equals("ANT")) {
+            LOG.info("ANT");
+        }
         PmbObject parentObj = getParentObject(obj);
         if (null != parentObj) {
             avgPerNE = 1 * parentObj.getAvg();

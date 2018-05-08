@@ -65,4 +65,12 @@ public class AlarmSpec {
             alarmMap.put(adapId, alarmList);
         }
     }
+
+    public List<ArsAlarm> getAlarmList(String adaptationId) {
+        String adapId = adaptationId.replaceAll("\\.", "_");
+        if (alarmMap.containsKey(adapId)) {
+            return alarmMap.get(adapId);
+        }
+        return new ArrayList<>();
+    }
 }
