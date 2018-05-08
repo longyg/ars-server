@@ -151,7 +151,7 @@ public class ObjectModelGenerator {
 
         // objects per Network Element
         oci.setAvg(pmbObject.getAvg());
-        oci.setMin(1);
+        oci.setMin(pmbObject.getMin());
         oci.setMax(pmbObject.getMax());
 
         // NEs per Network
