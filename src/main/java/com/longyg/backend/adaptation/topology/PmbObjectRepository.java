@@ -124,26 +124,37 @@ public class PmbObjectRepository {
         int avgPerNet;
         int maxPerNet;
         int maxPerRoot = 1;
-        for (ObjectLoad load : objectLoads) {
-            if (load.getObjectClass().equals(obj.getName())) {
-                if (load.getRelatedObjectClass() == null || "".equals(load.getRelatedObjectClass()))
-                // root
-                {
-                    maxPerNE = load.getMax();
-                    avgPerNE = load.getAvg();
-                    maxPerRoot = load.getMax();
-                }
-                else
-                // non-root
-                {
-                    PmbObject relatedObj = findRelatedObject(obj, load.getRelatedObjectClass());
-                    if (null != relatedObj) {
-                        maxPerNE = load.getMax() * relatedObj.getMax();
-                        avgPerNE = load.getAvg() * relatedObj.getAvg();
-                        maxPerRoot = load.getMax();
-                    }
-                }
-            }
+
+//        for (ObjectLoad load : objectLoads) {
+//            if (load.getObjectClass().equals(obj.getName())) {
+//                if (load.getRelatedObjectClass() == null || "".equals(load.getRelatedObjectClass()))
+//                // root
+//                {
+//                    maxPerNE = load.getMax();
+//                    avgPerNE = load.getAvg();
+//                    maxPerRoot = load.getMax();
+//                }
+//                else
+//                // non-root
+//                {
+//                    PmbObject relatedObj = findRelatedObject2(obj, load.getRelatedObjectClass());
+//                    if (null != relatedObj) {
+//                        maxPerNE = load.getMax() * relatedObj.getMax();
+//                        avgPerNE = load.getAvg() * relatedObj.getAvg();
+//                        maxPerRoot = load.getMax();
+//                    }
+//                }
+//            }
+//        }
+        List<ObjectLoad> objectLoads = findConfiguredLoads(obj);
+        Map<PmbObject, ObjectLoad> relatedObjLoad = findRelatedObject(obj, objectLoads);
+        if (null != relatedObjLoad) {
+            Map.Entry<PmbObject, ObjectLoad> entry = relatedObjLoad.entrySet().iterator().next();
+            PmbObject relatedObj = entry.getKey();
+            ObjectLoad load = entry.getValue();
+            maxPerNE = load.getMax() * relatedObj.getMax();
+            avgPerNE = load.getAvg() * relatedObj.getAvg();
+            maxPerRoot = load.getMax();
         }
 
         maxPerNet = maxPerNE * config.getNeSize().getMaxNePerNetwork();
@@ -160,6 +171,24 @@ public class PmbObjectRepository {
         obj.setMaxPerRoot(maxPerRoot);
     }
 
+    private List<ObjectLoad> findConfiguredLoads(PmbObject obj) {
+        List<ObjectLoad> loads = new ArrayList<>();
+        for (ObjectLoad load : objectLoads) {
+            if (load.getObjectClass().equals(obj.getName())) {
+                if (!loads.contains(load)) {
+                    loads.add(load);
+                }
+            }
+        }
+        return loads;
+    }
+
+    /**
+     * @deprecated
+     * @param object
+     * @param name
+     * @return
+     */
     private PmbObject findRelatedObject(PmbObject object, String name) {
         for (List<PmbObject> list : allReleaseObjects.values()) {
             for (PmbObject obj : list) {
@@ -170,6 +199,38 @@ public class PmbObjectRepository {
         }
         return null;
     }
+
+    private Map<PmbObject, ObjectLoad> findRelatedObject(PmbObject object, List<ObjectLoad> objectLoads) {
+        Map<PmbObject, ObjectLoad> map = null;
+        if (object.getParentObjects().size() < 1) {
+            return null;
+        }
+        for (PmbObject parentObj : object.getParentObjects()) {
+            for (ObjectLoad objectLoad : objectLoads) {
+                if (parentObj.getName().equals(objectLoad.getRelatedObjectClass())) {
+                    map = new HashMap<>();
+                    map.put(parentObj, objectLoad);
+                    return map;
+                }
+            }
+        }
+
+        for (PmbObject parentObj : object.getParentObjects()) {
+            return findRelatedObject(parentObj, objectLoads);
+        }
+
+        return map;
+    }
+
+    private ObjectLoad getLoad(PmbObject obj, List<ObjectLoad> objectLoads) {
+        for (ObjectLoad objectLoad : objectLoads) {
+            if (obj.getName().equals(objectLoad.getRelatedObjectClass())) {
+                return objectLoad;
+            }
+        }
+        return null;
+    }
+
 
     // is object is descendant of object with name
     private boolean isDescendant(PmbObject object, String name) {

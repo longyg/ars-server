@@ -93,7 +93,7 @@ public class ExportUtils {
         }
     }
 
-    public static void addAdaptationIdRow(int rowNo, HSSFSheet sheet, String adaptationId, HSSFRow adapIdTplRow) {
+    public static int addAdaptationIdRow(int rowNo, HSSFSheet sheet, String adaptationId, HSSFRow adapIdTplRow) {
         HSSFRow newRow = sheet.getRow(rowNo);
         if (null == newRow) {
             newRow = sheet.createRow(rowNo);
@@ -111,9 +111,10 @@ public class ExportUtils {
 
         String adapId = adaptationId.replaceAll("_", ".");
         cell.setCellValue("Adaptation ID: " + adapId);
+        return rowNo;
     }
 
-    public static void addTitleRow(int rowNo, HSSFSheet sheet, HSSFRow titleTplRow) {
+    public static int addTitleRow(int rowNo, HSSFSheet sheet, HSSFRow titleTplRow) {
         HSSFRow newRow = sheet.getRow(rowNo);
         if (null == newRow) {
             newRow = sheet.createRow(rowNo);
@@ -168,5 +169,6 @@ public class ExportUtils {
                     break;
             }
         }
+        return rowNo;
     }
 }

@@ -59,11 +59,14 @@ public class ObjectLoad {
 
         ObjectLoad that = (ObjectLoad) o;
 
-        return id != null ? id.equals(that.id) : that.id == null;
+        if (objectClass != null ? !objectClass.equals(that.objectClass) : that.objectClass != null) return false;
+        return relatedObjectClass != null ? relatedObjectClass.equals(that.relatedObjectClass) : that.relatedObjectClass == null;
     }
 
     @Override
     public int hashCode() {
-        return id != null ? id.hashCode() : 0;
+        int result = objectClass != null ? objectClass.hashCode() : 0;
+        result = 31 * result + (relatedObjectClass != null ? relatedObjectClass.hashCode() : 0);
+        return result;
     }
 }

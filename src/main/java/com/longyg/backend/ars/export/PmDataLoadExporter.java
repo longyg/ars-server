@@ -79,26 +79,35 @@ public class PmDataLoadExporter extends Exporter {
 
     private int generateMeasurements(HSSFSheet sheet, PmDataLoadSpec spec, int startRowNo) {
         int rowNo = startRowNo - 1;
+        int measEndRowNo = 0;
         if (spec.getMeasurementMap().keySet().size() > 1) {
             for (String adaptationId : spec.getMeasurementMap().keySet()) {
-                ExportUtils.addAdaptationIdRow(rowNo, sheet, adaptationId, adapIdTplRow);
-                rowNo++;
-                ExportUtils.addTitleRow(rowNo, sheet, titleTplRow);
-                rowNo = addDataRows(rowNo, sheet, spec.getMeasurementMap().get(adaptationId));
-                rowNo++;
+                int adapIdStartRowNo = rowNo;
+                int adapIdEndRowNo = ExportUtils.addAdaptationIdRow(adapIdStartRowNo, sheet, adaptationId, adapIdTplRow);
+                int titleStartRowNo = adapIdEndRowNo + 1;
+                int titleEndRowNo = ExportUtils.addTitleRow(titleStartRowNo, sheet, titleTplRow);
+                int dataStartRowNo = titleEndRowNo + 1;
+                int dataEndRowNo = addDataRows(dataStartRowNo, sheet, spec.getMeasurementMap().get(adaptationId));
+                setConditionFormatting(sheet, dataStartRowNo + 1, dataEndRowNo);
+                rowNo = dataEndRowNo + 1;
+                measEndRowNo = dataEndRowNo;
             }
         } else if (spec.getMeasurementMap().keySet().size() == 1) {
-            ExportUtils.addTitleRow(rowNo, sheet, titleTplRow);
+            int titleStartRowNo = rowNo;
+            int titleEndRowNo = ExportUtils.addTitleRow(titleStartRowNo, sheet, titleTplRow);
             String adaptationId = spec.getMeasurementMap().keySet().iterator().next();
-            rowNo = addDataRows(rowNo, sheet, spec.getMeasurementMap().get(adaptationId));
+            int dataStartRowNo = titleEndRowNo + 1;
+            int dataEndRowNo = addDataRows(dataStartRowNo, sheet, spec.getMeasurementMap().get(adaptationId));
+            setConditionFormatting(sheet, dataStartRowNo + 1, dataEndRowNo);
+            measEndRowNo = dataEndRowNo;
         } else {
             LOG.severe("Empty PM Data Load entries");
         }
-        return rowNo;
+        return measEndRowNo;
     }
 
     private int addDataRows(int startRowNo, HSSFSheet sheet, List<ArsMeasurement> dataList) {
-        int rowNo = startRowNo + 1;
+        int rowNo = startRowNo;
         for (ArsMeasurement meas : dataList) {
             HSSFRow newRow = sheet.getRow(rowNo);
             if (null == newRow) {
@@ -199,8 +208,6 @@ public class PmDataLoadExporter extends Exporter {
             rowNo++;
         }
 
-        setConditionFormatting(sheet, startRowNo + 2, rowNo);
-
         return rowNo;
     }
 
@@ -208,6 +215,7 @@ public class PmDataLoadExporter extends Exporter {
         HSSFSheetConditionalFormatting scf = sheet.getSheetConditionalFormatting();
 
         String formula02 = String.format("AM%d > 2", startRowNo - 1);
+        LOG.info("========= formula 1: " + formula02);
         HSSFConditionalFormattingRule rule02 = scf.createConditionalFormattingRule(formula02);
         HSSFPatternFormatting pp02 = rule02.createPatternFormatting();
         pp02.setFillBackgroundColor(IndexedColors.YELLOW.getIndex());
@@ -219,6 +227,7 @@ public class PmDataLoadExporter extends Exporter {
         scf.addConditionalFormatting(range02, rules02);
 
         String formula01 = String.format("AN%d > 2", startRowNo - 1);
+        LOG.info("========= formula 2: " + formula02);
         HSSFConditionalFormattingRule rule01 = scf.createConditionalFormattingRule(formula01);
         HSSFPatternFormatting pp01 = rule01.createPatternFormatting();
         pp01.setFillBackgroundColor(IndexedColors.YELLOW.getIndex());

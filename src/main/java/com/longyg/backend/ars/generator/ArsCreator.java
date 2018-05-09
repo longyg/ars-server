@@ -134,6 +134,7 @@ public class ArsCreator {
                 needDownload = true;
             }
         } else {
+            LOG.info("Local file: " + localFile.getAbsolutePath() + " does not exist, download it.");
             needDownload = true;
         }
         if (needDownload) {
