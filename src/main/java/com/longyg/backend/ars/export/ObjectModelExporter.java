@@ -77,6 +77,7 @@ public class ObjectModelExporter extends Exporter {
         setCell(row, 27, oci.getPresentation());
         setCell(row, 28, oci.getNameInOmes());
         setCell(row, 29, oci.getAdaptationId());
+        setCell(row, 30, oci.getComment());
     }
 
     private void setCell(HSSFRow row, int cellNo, Object value) {
