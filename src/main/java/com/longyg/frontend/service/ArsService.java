@@ -60,9 +60,30 @@ public class ArsService {
     }
 
     public void deleteArses(List<String> ids) {
-        if (null != ids && ids.size() > 0) {
-            arsRepository.deleteByIdIn(ids);
+        if (null == ids || ids.size() < 1) {
+            return;
         }
+
+        for (String id : ids) {
+            Optional<ARS> opt = arsRepository.findById(id);
+            if (opt.isPresent()) {
+                ARS ars = opt.get();
+                if (ars.getObjectModel() != null) {
+                    omRepository.deleteById(ars.getObjectModel());
+                }
+                if (ars.getPmDataLoad() != null) {
+                    pmRepository.deleteById(ars.getPmDataLoad());
+                }
+                if (ars.getCounter() != null) {
+                    counterRepository.deleteById(ars.getCounter());
+                }
+                if (ars.getAlarm() != null) {
+                    alarmRepository.deleteById(ars.getAlarm());
+                }
+            }
+        }
+
+        arsRepository.deleteByIdIn(ids);
     }
 
     // ARS Config Services
