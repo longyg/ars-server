@@ -1,5 +1,6 @@
 package com.longyg.backend.ars.export;
 
+import com.longyg.frontend.Utils.FileUtils;
 import com.longyg.frontend.model.ars.ARS;
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -45,7 +46,7 @@ public class ArsExporter {
             exporter.export(this.ars, this.wb);
         }
 
-        String outPath = getOutExcelFilePath();
+        String outPath = FileUtils.getArsFilePath(this.ars.getNeType(), this.ars.getNeVersion());
         try (FileOutputStream fileOut = new FileOutputStream(outPath)) {
             this.wb.write(fileOut);
         } catch (Exception e) {
@@ -68,20 +69,6 @@ public class ArsExporter {
         this.exporters.add(pmDlExporter);
         this.exporters.add(countersExporter);
         this.exporters.add(alarmsExporter);
-    }
-
-    private String getOutExcelFilePath() throws Exception {
-        String outDirPath = ARS_XLS_ROOT_PATH + File.separator + this.ars.getNeType() + File.separator + this.ars.getNeVersion();
-        String filename = ARS_XLS_FILENAME_PREFIX + " " + this.ars.getNeType() + " " + this.ars.getNeVersion() + ".xls";
-        File outDir = new File(outDirPath);
-        if (outDir.exists() && !outDir.isDirectory()) {
-            LOG.error(outDir.getAbsolutePath() + " is not a directory");
-            throw new Exception(outDir.getAbsolutePath() + " is not a directory");
-        } else if (!outDir.exists()) {
-            outDir.mkdirs();
-        }
-
-        return outDirPath + File.separator + filename;
     }
 
     private void initWorkbook() throws Exception {

@@ -49,11 +49,11 @@ public class TemplateRepository {
         AlarmsTplDefParser alarmsTplDefParser = new AlarmsTplDefParser();
         AlarmsTplDef alarmsTplDef = alarmsTplDefParser.parse(ALARM_TPL_DEF_PATH);
 
-        ExcelTemplateParser xlsTplParser = new ExcelTemplateParser();
-        ExcelTemplate template = xlsTplParser.parse(XLS_TPL_PATH, usTplDef);
+//        ExcelTemplateParser xlsTplParser = new ExcelTemplateParser();
+//        ExcelTemplate template = xlsTplParser.parse(XLS_TPL_PATH, usTplDef);
 
-        TemplateRepository.template = template;
-        TemplateRepository.usTplDef = usTplDef;
+//        TemplateRepository.template = template;
+//        TemplateRepository.usTplDef = usTplDef;
         TemplateRepository.omTplDef = omTplDef;
         TemplateRepository.pmDlTplDef = pmDlTplDef;
         TemplateRepository.ctrTplDef = ctrTplDef;

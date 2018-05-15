@@ -2,6 +2,7 @@ package com.longyg.frontend.controller;
 
 import com.longyg.backend.ars.export.ArsExporter;
 import com.longyg.backend.ars.generator.ArsCreator;
+import com.longyg.frontend.Utils.FileUtils;
 import com.longyg.frontend.model.ars.ARS;
 import com.longyg.frontend.model.ars.alarm.AlarmSpec;
 import com.longyg.frontend.model.ars.counter.CounterSpec;
@@ -9,11 +10,17 @@ import com.longyg.frontend.model.ars.om.ObjectModelSpec;
 import com.longyg.frontend.model.ars.pm.PmDataLoadSpec;
 import com.longyg.frontend.service.ArsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.swing.text.html.HTMLDocument;
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -53,7 +60,6 @@ public class ArsRestController {
             arsExporter.export(ars);
             return new ResponseEntity<>(savedArs, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
             LOG.severe("Exception while generating ARS: " + e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -72,4 +78,36 @@ public class ArsRestController {
 
     @GetMapping("/api/alarm/{id}")
     public AlarmSpec getAlarmSpec(@PathVariable("id") String id) { return arsService.findAlarm(id); }
+
+    @GetMapping("/api/ars/{neType:.+}/{neVersion:.+}")
+    @ResponseBody
+    public ResponseEntity<Resource> downloadArs(@PathVariable String neType, @PathVariable String neVersion) {
+        String arsFilePath = null;
+        try {
+            arsFilePath = FileUtils.getArsFilePath(neType, neVersion);
+        } catch (Exception e) {
+            LOG.severe("Exception while getting ARS file path: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (null == arsFilePath) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        Resource resource = null;
+        try {
+            Path path = Paths.get(arsFilePath);
+            resource = new UrlResource(path.toUri());
+        } catch (Exception e) {
+            LOG.severe("Exception while creating ars resource: " + e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        if (null == resource) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+    }
 }
